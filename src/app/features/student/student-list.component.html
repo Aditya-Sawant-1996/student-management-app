@@ -1,0 +1,126 @@
+<section class="bg-white dark:bg-gray-800 rounded shadow p-6 flex flex-col gap-4">
+  <h2 class="text-xl font-semibold text-gray-800 dark:text-gray-100">Student List</h2>
+
+  <!-- Search bar -->
+  <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+    <input
+      type="text"
+      placeholder="Search by name or class..."
+      class="flex-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      (input)="onSearchChange($any($event.target).value)"
+    />
+  </div>
+
+  <!-- Create / edit form -->
+  <form (ngSubmit)="onSubmit()" [formGroup]="form" class="grid gap-3 sm:grid-cols-4 items-end">
+    <div class="sm:col-span-2">
+      <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Name</label>
+      <input
+        formControlName="name"
+        class="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Student name"
+      />
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Age</label>
+      <input
+        type="number"
+        formControlName="age"
+        class="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Age"
+      />
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">Class</label>
+      <input
+        formControlName="class"
+        class="w-full rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        placeholder="Class"
+      />
+    </div>
+    <div class="sm:col-span-4 flex gap-2 justify-end">
+      <button
+        type="button"
+        *ngIf="editingId"
+        (click)="cancelEdit()"
+        class="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+        [disabled]="form.invalid"
+      >
+        {{ editingId ? 'Update' : 'Add' }} Student
+      </button>
+    </div>
+  </form>
+
+  <!-- Table -->
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead>
+        <tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
+          <th class="px-4 py-2 text-left">Name</th>
+          <th class="px-4 py-2 text-left">Age</th>
+          <th class="px-4 py-2 text-left">Class</th>
+          <th class="px-4 py-2 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="!loading && students.length === 0">
+          <td colspan="4" class="px-4 py-4 text-center text-gray-500 dark:text-gray-300">
+            No students found.
+          </td>
+        </tr>
+        <tr *ngFor="let s of students" class="border-t border-gray-200 dark:border-gray-700">
+          <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ s.name }}</td>
+          <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ s.age }}</td>
+          <td class="px-4 py-2 text-gray-800 dark:text-gray-100">{{ s.class }}</td>
+          <td class="px-4 py-2 text-right space-x-2">
+            <button
+              type="button"
+              (click)="edit(s)"
+              class="px-3 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium"
+            >
+              Edit
+            </button>
+            <button
+              type="button"
+              (click)="delete(s)"
+              class="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 mt-2">
+    <div>
+      Page {{ page }} of {{ totalPages }} ({{ total }} students)
+    </div>
+    <div class="space-x-2">
+      <button
+        type="button"
+        (click)="prevPage()"
+        class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="page <= 1"
+      >
+        Previous
+      </button>
+      <button
+        type="button"
+        (click)="nextPage()"
+        class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="page >= totalPages"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</section>
