@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 
@@ -8,6 +9,7 @@ import { AppComponent } from './app.component';
 import { MainLayoutComponent } from './layout/main-layout.component';
 import { SidebarComponent } from './layout/sidebar.component';
 import { HeaderComponent } from './layout/header.component';
+import { MaterialModule } from './shared/material/material.module';
 
 @NgModule({
   declarations: [
@@ -18,9 +20,10 @@ import { HeaderComponent } from './layout/header.component';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     HttpClientModule,
-    AppRoutingModule,  // routing
-    MatIconModule
+    AppRoutingModule,
+    MaterialModule
   ],
   providers: [],
   bootstrap: [AppComponent]

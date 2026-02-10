@@ -1,4 +1,38 @@
 <section class="space-y-4">
   <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Students</h1>
-  <app-student-list></app-student-list>
+
+  <app-list
+    [tableHeaders]="tableHeaders"
+    [tableData]="students"
+    [searchPlaceholder]="searchPlaceholder"
+    (addClicked)="openAddModal()"
+    (editClicked)="openEditModal($event)"
+    (deleteClicked)="onDelete($event)"
+    (searchChange)="onSearchChange($event)"
+  ></app-list>
+
+  <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 mt-2">
+    <div>
+      Page {{ page }} of {{ totalPages }} ({{ total }} students)
+    </div>
+    <div class="space-x-2">
+      <button
+        type="button"
+        (click)="prevPage()"
+        class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="page <= 1"
+      >
+        Previous
+      </button>
+      <button
+        type="button"
+        (click)="nextPage()"
+        class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        [disabled]="page >= totalPages"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+
 </section>

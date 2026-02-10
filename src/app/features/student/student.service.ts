@@ -4,8 +4,16 @@ import { Observable } from 'rxjs';
 
 export interface Student {
   _id?: string;
-  name: string;
+  name?: string; // derived on backend from the name parts
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  fullNameMarathi?: string;
+  gender?: 'Male' | 'Female' | 'Other';
+  dateOfBirth?: string; // ISO string from backend
   age: number;
+  bloodGroup?: string;
+  nationality?: string;
   class: string;
 }
 

@@ -2,4 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Global styles (keep minimal; rely on Tailwind utility classes) */
+/* Ensure Angular Material overlays (selects, datepickers, dialogs) appear above custom modals */
+.cdk-overlay-container,
+.cdk-global-overlay-wrapper {
+	z-index: 9999 !important;
+}
+
+/* Make Material form fields visually blend with Tailwind dark/light backgrounds inside modals */
+.mat-mdc-form-field {
+	width: 100%;
+}
+
+.dark .mat-mdc-form-field-subscript-wrapper {
+	color: #f9fafb;
+}
+
+.dark .mat-mdc-text-field-wrapper,
+.dark .mat-mdc-select-panel,
+.dark .mat-calendar {
+	background-color: #111827;
+	color: #f9fafb;
+}
+
+.mat-mdc-select-panel {
+	border-radius: 0.5rem;
+}
