@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Student, StudentService } from '../../features/student/student.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -8,26 +8,37 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   templateUrl: './add-edit-student-modal.component.html',
   styleUrls: ['./add-edit-student-modal.component.scss']
 })
-export class AddEditStudentModalComponent implements OnInit {
+export class AddEditStudentModalComponent implements OnInit, OnDestroy {
 
   student: Student | null = null;
 
   form: FormGroup;
   submitted = false;
   loading = false;
+  selectedPhoto: File | null = null;
+  photoError: string | null = null;
+  photoPreviewUrl: string | null = null;
 
-  genders: any[] = [ {name:"Male", value:'male'}, {name:"Female", value:'female'}, {name:"Other", value:'other'}];
-  readonly bloodGroups: string[] = [
-    'A+',
-    'A-',
-    'B+',
-    'B-',
-    'AB+',
-    'AB-',
-    'O+',
-    'O-',
+  genders: { name: string; value: Student['gender'] }[] = [
+    { name: 'Male', value: 'Male' },
+    { name: 'Female', value: 'Female' },
+    { name: 'Other', value: 'Other' },
   ];
-  readonly nationalities: string[] = ['Indian', 'Other'];
+
+  handicappedOptions: { label: string; value: Student['handicapped'] }[] = [
+    { label: 'Yes', value: 'Yes' },
+    { label: 'No', value: 'No' },
+  ];
+
+  allSubjects: string[] = [
+    'Mathematics',
+    'Science',
+    'English',
+    'History',
+    'Geography',
+    'Computer Science',
+  ];
+  subjectSearch = '';
 
   get isEdit(): boolean {
     return !!(this.student && this.student._id);
@@ -39,62 +50,83 @@ export class AddEditStudentModalComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: { student: Student | null },
     private dialogRef: MatDialogRef<AddEditStudentModalComponent>
   ) {
-	this.student = data?.student ?? null;
-	this.form = this.fb.group({
-    firstName: ['', Validators.required],
-    middleName: [''],
-    lastName: ['', Validators.required],
-    fullNameMarathi: [''],
-    gender: ['', Validators.required],
-    dateOfBirth: [null, Validators.required],
-    age: [null, [Validators.required, Validators.min(1)]],
-    bloodGroup: [''],
-    nationality: ['Indian'],
-    class: ['', Validators.required],
-  });
+    this.student = data?.student ?? null;
 
-  this.form.get('dateOfBirth')?.valueChanges.subscribe((value) => {
-    const age = this.calculateAge(value);
-    if (age !== null) {
-      this.form.get('age')?.setValue(age, { emitEvent: false });
-    } else {
-      this.form.get('age')?.setValue(null, { emitEvent: false });
-    }
-  });
+    const namePattern = /^[A-Za-z\s]+$/;
+    const aadhaarPattern = /^\d{12}$/;
+    const mobilePattern = /^\d{10}$/;
+
+    this.form = this.fb.group({
+      surName: ['', [Validators.required, Validators.pattern(namePattern)]],
+      firstName: ['', [Validators.required, Validators.pattern(namePattern)]],
+      guardianName: ['', [Validators.required, Validators.pattern(namePattern)]],
+      mothersName: ['', [Validators.required, Validators.pattern(namePattern)]],
+      subject: [[], [Validators.required]],
+      batch: [''],
+      address: ['', [Validators.required]],
+      aadhaarNumber: ['', [Validators.required, Validators.pattern(aadhaarPattern)]],
+      mobileNo: ['', [Validators.required, Validators.pattern(mobilePattern)]],
+      email: ['', [Validators.email]],
+      birthPlace: ['', [Validators.required]],
+      dateOfBirth: [null, [Validators.required]],
+      gender: ['', [Validators.required]],
+      handicapped: ['', [Validators.required]],
+      latestEducation: ['', [Validators.required]],
+      previousSchoolName: ['', [Validators.required]],
+    });
   }
 
   ngOnInit(): void {
-  this.submitted = false;
-  if (this.student) {
-    const parsed = this.parseNameFromLegacy(this.student);
-    this.form.reset({
-    firstName: this.student.firstName ?? parsed.firstName,
-    middleName: this.student.middleName ?? parsed.middleName,
-    lastName: this.student.lastName ?? parsed.lastName,
-    fullNameMarathi: this.student.fullNameMarathi ?? '',
-    gender: this.student.gender ?? '',
-    dateOfBirth: this.student.dateOfBirth
-      ? new Date(this.student.dateOfBirth)
-      : null,
-    age: this.student.age,
-    bloodGroup: this.student.bloodGroup ?? '',
-    nationality: this.student.nationality ?? 'Indian',
-    class: this.student.class,
-    });
-  } else {
-    this.form.reset({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    fullNameMarathi: '',
-    gender: '',
-    dateOfBirth: null,
-    age: null,
-    bloodGroup: '',
-    nationality: 'Indian',
-    class: '',
-    });
+    this.submitted = false;
+    if (this.student) {
+      this.form.reset({
+        surName: this.student.surName ?? '',
+        firstName: this.student.firstName ?? '',
+        guardianName: this.student.guardianName ?? '',
+        mothersName: this.student.mothersName ?? '',
+        subject: this.student.subject ?? [],
+        batch: this.student.batch ?? '',
+        address: this.student.address ?? '',
+        aadhaarNumber: this.student.aadhaarNumber ?? '',
+        mobileNo: this.student.mobileNo ?? '',
+        email: this.student.email ?? '',
+        birthPlace: this.student.birthPlace ?? '',
+        dateOfBirth: this.student.dateOfBirth
+          ? new Date(this.student.dateOfBirth)
+          : null,
+        gender: this.student.gender ?? '',
+        handicapped: this.student.handicapped ?? '',
+        latestEducation: this.student.latestEducation ?? '',
+        previousSchoolName: this.student.previousSchoolName ?? '',
+      });
+
+      if (this.student.photo) {
+        this.photoPreviewUrl = this.buildPhotoUrl(this.student.photo);
+      }
+    } else {
+      this.form.reset({
+        surName: '',
+        firstName: '',
+        guardianName: '',
+        mothersName: '',
+        subject: [],
+        batch: '',
+        address: '',
+        aadhaarNumber: '',
+        mobileNo: '',
+        email: '',
+        birthPlace: '',
+        dateOfBirth: null,
+        gender: '',
+        handicapped: '',
+        latestEducation: '',
+        previousSchoolName: '',
+      });
+    }
   }
+
+  ngOnDestroy(): void {
+    this.clearPreview();
   }
 
   onClose(): void {
@@ -108,16 +140,35 @@ export class AddEditStudentModalComponent implements OnInit {
       return;
     }
 
+    if (!this.isEdit && !this.selectedPhoto) {
+      this.photoError = 'Photo is required.';
+      return;
+    }
+
     const formValue = this.form.value;
-    const payload: Student = {
-      ...formValue,
-      // ensure dateOfBirth is sent as ISO string
-      dateOfBirth: formValue.dateOfBirth
-        ? (formValue.dateOfBirth instanceof Date
-          ? formValue.dateOfBirth.toISOString()
-          : new Date(formValue.dateOfBirth).toISOString())
-        : undefined,
-    } as Student;
+
+    const payload = new FormData();
+    Object.keys(formValue).forEach((key) => {
+      const value = (formValue as any)[key];
+      if (value === null || value === undefined || value === '') {
+        return;
+      }
+      if (key === 'subject' && Array.isArray(value)) {
+        value.forEach((s: string) => payload.append('subject', s));
+        return;
+      }
+      if (key === 'dateOfBirth') {
+        const date: Date = value instanceof Date ? value : new Date(value);
+        payload.append('dateOfBirth', date.toISOString());
+        return;
+      }
+      payload.append(key, value);
+    });
+
+    if (this.selectedPhoto) {
+      payload.append('photo', this.selectedPhoto);
+    }
+
     this.loading = true;
 
     if (this.isEdit && this.student && this.student._id) {
@@ -147,43 +198,74 @@ export class AddEditStudentModalComponent implements OnInit {
     }
   }
 
-  private calculateAge(value: any): number | null {
-    if (!value) {
-      return null;
+  onPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
     }
-    const date = value instanceof Date ? value : new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return null;
-    }
-    const today = new Date();
-    let age = today.getFullYear() - date.getFullYear();
-    const m = today.getMonth() - date.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
-      age--;
-    }
-    return age >= 0 ? age : null;
+    this.handleFile(input.files[0]);
+    // clear value so selecting same file again still triggers change
+    input.value = '';
   }
 
-  private parseNameFromLegacy(student: Student): {
-    firstName: string;
-    middleName: string;
-    lastName: string;
-  } {
-    const legacyName = student.name ?? '';
-    const parts = legacyName.trim().split(/\s+/).filter(Boolean);
-    let firstName = '';
-    let middleName = '';
-    let lastName = '';
-    if (parts.length === 1) {
-      firstName = parts[0];
-    } else if (parts.length === 2) {
-      [firstName, lastName] = parts;
-    } else if (parts.length >= 3) {
-      firstName = parts[0];
-      lastName = parts[parts.length - 1];
-      middleName = parts.slice(1, parts.length - 1).join(' ');
+  onPhotoDrop(event: DragEvent): void {
+    event.preventDefault();
+    if (!event.dataTransfer || !event.dataTransfer.files.length) {
+      return;
     }
-    return { firstName, middleName, lastName };
+    if (event.dataTransfer.files.length > 1) {
+      this.photoError = 'Please upload only one image.';
+      this.selectedPhoto = null;
+      this.clearPreview();
+      return;
+    }
+    this.handleFile(event.dataTransfer.files[0]);
+  }
+
+  onPhotoDragOver(event: DragEvent): void {
+    event.preventDefault();
+  }
+
+  private handleFile(file: File): void {
+    this.photoError = null;
+    if (!file.type.startsWith('image/')) {
+      this.photoError = 'Only image files are allowed.';
+      this.selectedPhoto = null;
+      this.clearPreview();
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      this.photoError = 'File size must be 5MB or less.';
+      this.selectedPhoto = null;
+      this.clearPreview();
+      return;
+    }
+    this.clearPreview();
+    this.selectedPhoto = file;
+    this.photoPreviewUrl = URL.createObjectURL(file);
+  }
+
+  private clearPreview(): void {
+    if (this.photoPreviewUrl && this.photoPreviewUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(this.photoPreviewUrl);
+    }
+    this.photoPreviewUrl = null;
+  }
+
+  private buildPhotoUrl(path: string): string {
+    if (!path) {
+      return '';
+    }
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+      return path;
+    }
+    const base = 'http://localhost:3000';
+    return base + (path.startsWith('/') ? path : '/' + path);
+  }
+
+  get filteredSubjects(): string[] {
+    const search = this.subjectSearch.toLowerCase();
+    return this.allSubjects.filter((s) => s.toLowerCase().includes(search));
   }
 
 }

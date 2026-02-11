@@ -2,28 +2,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure Angular Material overlays (selects, datepickers, dialogs) appear above custom modals */
-.cdk-overlay-container,
-.cdk-global-overlay-wrapper {
-	z-index: 9999 !important;
-}
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+// /* Ensure Angular Material overlays (selects, datepickers, dialogs) appear above custom modals */
+// .cdk-overlay-container,
+// .cdk-global-overlay-wrapper {
+//   z-index: 9999 !important;
+// }
 
 /* Make Material form fields visually blend with Tailwind dark/light backgrounds inside modals */
 .mat-mdc-form-field {
-	width: 100%;
+  width: 100%;
 }
 
 .dark .mat-mdc-form-field-subscript-wrapper {
-	color: #f9fafb;
+  color: #f9fafb;
 }
 
 .dark .mat-mdc-text-field-wrapper,
 .dark .mat-mdc-select-panel,
 .dark .mat-calendar {
-	background-color: #111827;
-	color: #f9fafb;
+  background-color: #111827;
+  color: #f9fafb;
 }
 
 .mat-mdc-select-panel {
-	border-radius: 0.5rem;
+  border-radius: 0.5rem;
 }
+
+/* Dark mode placeholder & label colors for Material inputs/selects */
+.dark .mat-mdc-input-element::placeholder {
+  color: #9ca3af; /* Tailwind gray-400 */
+  opacity: 1; /* Ensure color is not faded */
+}
+
+.dark .mat-mdc-form-field .mdc-floating-label,
+.dark .mat-mdc-form-field .mdc-floating-label--float-above {
+  color: #9ca3af;
+}
+
+/* Dark mode placeholder color for mat-select (when empty) */
+.dark .mat-mdc-select-placeholder {
+  color: #9ca3af;
+}
+
+/* Hide empty Material form-field subscript area (no hints/errors) */
+.mat-mdc-form-field-subscript-wrapper {
+  min-height: 0 !important;
+}
+
+/* If your app later uses mat-error/mat-hint, they will still render;
+   this only removes the default empty spacing. */

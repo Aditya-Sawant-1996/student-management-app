@@ -4,17 +4,24 @@ import { Observable } from 'rxjs';
 
 export interface Student {
   _id?: string;
-  name?: string; // derived on backend from the name parts
+  name?: string; // derived on backend from firstName + surName
+  surName: string;
   firstName: string;
-  middleName?: string;
-  lastName: string;
-  fullNameMarathi?: string;
-  gender?: 'Male' | 'Female' | 'Other';
-  dateOfBirth?: string; // ISO string from backend
-  age: number;
-  bloodGroup?: string;
-  nationality?: string;
-  class: string;
+  guardianName: string;
+  mothersName: string;
+  subject: string[];
+  batch?: string;
+  address: string;
+  aadhaarNumber: string;
+  mobileNo: string;
+  email?: string;
+  birthPlace: string;
+  dateOfBirth: string; // ISO string from backend
+  gender: 'Male' | 'Female' | 'Other';
+  handicapped: 'Yes' | 'No';
+  latestEducation: string;
+  previousSchoolName: string;
+  photo: string; // server path to uploaded photo
 }
 
 export interface StudentListResponse {
@@ -41,12 +48,12 @@ export class StudentService {
     return this.http.get<StudentListResponse>(this.baseUrl, { params });
   }
 
-  create(student: Student): Observable<any> {
-    return this.http.post(this.baseUrl, student);
+  create(payload: FormData): Observable<any> {
+    return this.http.post(this.baseUrl, payload);
   }
 
-  update(id: string, student: Partial<Student>): Observable<any> {
-    return this.http.put(`${this.baseUrl}/${id}`, student);
+  update(id: string, payload: FormData): Observable<any> {
+    return this.http.put(`${this.baseUrl}/${id}`, payload);
   }
 
   delete(id: string): Observable<any> {

@@ -8,14 +8,14 @@ import { ListComponent } from '../../shared/list/list.component';
   declarations: [ListComponent],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     RouterModule
   ],
   exports: [
     CommonModule,
-    ReactiveFormsModule,
     FormsModule,
+    ReactiveFormsModule,
     RouterModule,
     ListComponent
   ]

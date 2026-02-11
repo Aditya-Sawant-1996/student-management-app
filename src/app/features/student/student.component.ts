@@ -5,10 +5,9 @@ import { AddEditStudentModalComponent } from '../../shared/add-edit-student-moda
 
 @Component({
   selector: 'app-student',
-  templateUrl: './student.component.html'
+  templateUrl: './student.component.html',
 })
 export class StudentComponent implements OnInit {
-
   students: Student[] = [];
   search = '';
   page = 1;
@@ -18,13 +17,16 @@ export class StudentComponent implements OnInit {
 
   tableHeaders = [
     { field: 'name', label: 'Name' },
-    { field: 'age', label: 'Age' },
-    { field: 'class', label: 'Class' },
+    { field: 'mobileNo', label: 'Mobile' },
+    { field: 'batch', label: 'Batch' },
   ];
 
-  searchPlaceholder = 'Search by name or class...';
+  searchPlaceholder = 'Search by name, mobile or batch...';
 
-  constructor(private studentService: StudentService, private dialog: MatDialog) {}
+  constructor(
+    private studentService: StudentService,
+    private dialog: MatDialog,
+  ) {}
 
   ngOnInit(): void {
     this.load();
@@ -55,29 +57,33 @@ export class StudentComponent implements OnInit {
   }
 
   openAddModal(): void {
-  const dialogRef = this.dialog.open(AddEditStudentModalComponent, {
-    // width: '640px',
-    data: { student: null },
-    panelClass: 'student-dialog-panel',
-  });
-  dialogRef.afterClosed().subscribe((result) => {
-    if (result) {
-      this.load();
-    }
-  });
+    const dialogRef = this.dialog.open(AddEditStudentModalComponent, {
+      // width: '640px',
+      data: { student: null },
+      panelClass: 'student-dialog-panel',
+      closeOnNavigation: false,
+      disableClose: true,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.load();
+      }
+    });
   }
 
   openEditModal(student: Student): void {
-  const dialogRef = this.dialog.open(AddEditStudentModalComponent, {
-    // width: '640px',
-    data: { student },
-    panelClass: 'student-dialog-panel',
-  });
-  dialogRef.afterClosed().subscribe((result) => {
-    if (result) {
-      this.load();
-    }
-  });
+    const dialogRef = this.dialog.open(AddEditStudentModalComponent, {
+      // width: '640px',
+      data: { student },
+      panelClass: 'student-dialog-panel',
+      closeOnNavigation: false,
+      disableClose: true,
+    });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.load();
+      }
+    });
   }
 
   onDelete(student: Student): void {

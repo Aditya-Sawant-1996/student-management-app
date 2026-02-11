@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { StudentRoutingModule } from './student-routing.module';
 import { StudentComponent } from './student.component';
 import { AddEditStudentModalComponent } from '../../shared/add-edit-student-modal/add-edit-student-modal.component';
@@ -12,5 +12,6 @@ import { MaterialModule } from '../../shared/material/material.module';
     StudentRoutingModule,
     MaterialModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class StudentModule {}

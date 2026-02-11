@@ -1,213 +1,476 @@
 <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg">
-	<!-- Modal Header -->
-	<div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-		<h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-			{{ isEdit ? 'Edit Student' : 'Add Student' }}
-		</h3>
-		<button
-			type="button"
-			(click)="onClose()"
-			class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
-		>
-			✕
-		</button>
-	</div>
+  <!-- Modal Header -->
+  <div
+    class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700"
+  >
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+      {{ isEdit ? "Edit Student" : "Add Student" }}
+    </h3>
+    <button
+      type="button"
+      (click)="onClose()"
+      class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+    >
+      ✕
+    </button>
+  </div>
 
-	<form [formGroup]="form" (ngSubmit)="onSubmit()">
-		<!-- Modal Content -->
-		<div class="px-4 py-4 space-y-4 overflow-y-auto h-[calc(100vh-200px)]">
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							First Name<span class="text-red-500">*</span>
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								formControlName="firstName"
-								placeholder="First name"
-							/>
-						</mat-form-field>
-						<p
-							class="mt-1 text-xs text-red-500"
-							*ngIf="form.get('firstName')?.invalid && (form.get('firstName')?.touched || submitted)"
-						>
-							First name is required.
-						</p>
-					</div>
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							Middle Name
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								formControlName="middleName"
-								placeholder="Middle name (optional)"
-							/>
-						</mat-form-field>
-					</div>
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							Last Name<span class="text-red-500">*</span>
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								formControlName="lastName"
-								placeholder="Last name"
-							/>
-						</mat-form-field>
-						<p
-							class="mt-1 text-xs text-red-500"
-							*ngIf="form.get('lastName')?.invalid && (form.get('lastName')?.touched || submitted)"
-						>
-							Last name is required.
-						</p>
-					</div>
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							Full Name (Marathi, as per Aadhaar)
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								formControlName="fullNameMarathi"
-								placeholder="मराठीतील पूर्ण नाव (ऐच्छिक)"
-							/>
-						</mat-form-field>
-					</div>
-				</div>
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <!-- Modal Content -->
+    <div class="px-4 py-4 space-y-4 overflow-y-auto h-[calc(100vh-200px)]">
+      <!-- Photo upload -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+        >
+          Upload Photo<span class="text-red-500 dark:text-red-400 font-semibold"
+            >*</span
+          >
+        </label>
+        <div
+          class="border-2 border-dashed rounded-md p-4 flex flex-col items-center justify-center gap-2 cursor-pointer hover:border-blue-500"
+          (drop)="onPhotoDrop($event)"
+          (dragover)="onPhotoDragOver($event)"
+        >
+          <p class="text-xs text-gray-600 dark:text-gray-300">
+            Drag and drop image here, or
+            <span class="text-blue-600 cursor-pointer">browse</span>
+          </p>
+          <p class="text-[11px] text-gray-500 dark:text-gray-400">
+            JPG, PNG or any image format up to 5MB.
+          </p>
+          <button
+            type="button"
+            class="mt-2 px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+            (click)="fileInput.click()"
+          >
+            Upload Photo
+          </button>
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            class="hidden"
+            (change)="onPhotoSelected($event)"
+          />
+          <p
+            class="mt-2 text-xs text-gray-700 dark:text-gray-200"
+            *ngIf="selectedPhoto"
+          >
+            Selected: {{ selectedPhoto.name }}
+            {{ selectedPhoto.size / 1024 | number: "1.0-0" }}
+            KB)
+          </p>
+          <div
+            class="mt-3 flex items-center justify-center"
+            *ngIf="photoPreviewUrl"
+          >
+            <img
+              [src]="photoPreviewUrl"
+              alt="Selected photo preview"
+              class="w-24 h-24 rounded object-cover border border-gray-300 dark:border-gray-600"
+            />
+          </div>
+        </div>
+        <p class="mt-1 text-xs text-red-500" *ngIf="photoError && submitted">
+          {{ photoError }}
+        </p>
+      </div>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-					<div>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<mat-label class="text-xs font-medium text-gray-600 dark:text-gray-300">
-								Gender<span class="text-red-500">*</span>
-							</mat-label>
-							<mat-select formControlName="gender" placeholder="Select gender">
-								<mat-option *ngFor="let g of genders" [value]="g.value">
-									{{ g.name }}
-								</mat-option>
-							</mat-select>
-						</mat-form-field>
-						<p
-							class="mt-1 text-xs text-red-500"
-							*ngIf="form.get('gender')?.invalid && (form.get('gender')?.touched || submitted)"
-						>
-							Gender is required.
-						</p>
-					</div>
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							Date of Birth<span class="text-red-500">*</span>
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								[matDatepicker]="dobPicker"
-								formControlName="dateOfBirth"
-								placeholder="Select date of birth"
-							/>
-							<mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
-							<mat-datepicker #dobPicker></mat-datepicker>
-						</mat-form-field>
-						<p
-							class="mt-1 text-xs text-red-500"
-							*ngIf="form.get('dateOfBirth')?.invalid && (form.get('dateOfBirth')?.touched || submitted)"
-						>
-							Date of birth is required.
-						</p>
-					</div>
-				</div>
+      <!-- Name block -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Surname<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="surName" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('surName')?.invalid &&
+              (form.get('surName')?.touched || submitted)
+            "
+          >
+            Surname is required and must contain only letters.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            First Name<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="firstName" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('firstName')?.invalid &&
+              (form.get('firstName')?.touched || submitted)
+            "
+          >
+            First name is required and must contain only letters.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Mother's Name<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="mothersName" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('mothersName')?.invalid &&
+              (form.get('mothersName')?.touched || submitted)
+            "
+          >
+            Mother's name is required and must contain only letters.
+          </p>
+        </div>
+        <!-- Father's / Spouse Name -->
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Father's / Spouse Name<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="guardianName" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('guardianName')?.invalid &&
+              (form.get('guardianName')?.touched || submitted)
+            "
+          >
+            Father's / spouse name is required and must contain only letters.
+          </p>
+        </div>
+      </div>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							Age (auto-calculated)
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								type="number"
-								formControlName="age"
-								placeholder="Age"
-								readonly
-							/>
-						</mat-form-field>
-						<p
-							class="mt-1 text-xs text-red-500"
-							*ngIf="form.get('age')?.errors && (form.get('age')?.touched || submitted)"
-						>
-							<span *ngIf="form.get('age')?.errors?.['required']">Age is required.</span>
-							<span *ngIf="form.get('age')?.errors?.['min']">Age must be at least 1.</span>
-						</p>
-					</div>
-					<div>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<mat-label class="text-xs font-medium text-gray-600 dark:text-gray-300">
-								Blood Group
-							</mat-label>
-							<mat-select formControlName="bloodGroup" placeholder="Select blood group">
-								<mat-option [value]="''">None</mat-option>
-								<mat-option *ngFor="let bg of bloodGroups" [value]="bg">
-									{{ bg }}
-								</mat-option>
-							</mat-select>
-						</mat-form-field>
-					</div>
-				</div>
+      <!-- Subject & Gender row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <mat-label
+            class="text-xs font-medium text-gray-600 dark:text-gray-300"
+          >
+            Subject<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </mat-label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <mat-select formControlName="subject" multiple>
+              <mat-option *ngFor="let s of filteredSubjects" [value]="s">
+                {{ s }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('subject')?.invalid &&
+              (form.get('subject')?.touched || submitted)
+            "
+          >
+            At least one subject must be selected.
+          </p>
+        </div>
+        <div>
+          <mat-label
+            class="text-xs font-medium text-gray-600 dark:text-gray-300"
+          >
+            Gender<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </mat-label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <mat-select formControlName="gender">
+              <mat-option *ngFor="let g of genders" [value]="g.value">
+                {{ g.name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('gender')?.invalid &&
+              (form.get('gender')?.touched || submitted)
+            "
+          >
+            Gender is required.
+          </p>
+        </div>
+      </div>
 
-				<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-					<div>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<mat-label class="text-xs font-medium text-gray-600 dark:text-gray-300">
-								Nationality
-							</mat-label>
-							<mat-select formControlName="nationality" placeholder="Select nationality">
-								<mat-option *ngFor="let n of nationalities" [value]="n">
-									{{ n }}
-								</mat-option>
-							</mat-select>
-						</mat-form-field>
-					</div>
-					<div>
-						<label class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1">
-							Class<span class="text-red-500">*</span>
-						</label>
-						<mat-form-field appearance="outline" class="w-full text-sm">
-							<input
-								matInput
-								formControlName="class"
-								placeholder="Class"
-							/>
-						</mat-form-field>
-						<p
-							class="mt-1 text-xs text-red-500"
-							*ngIf="form.get('class')?.invalid && (form.get('class')?.touched || submitted)"
-						>
-							Class is required.
-						</p>
-					</div>
-				</div>
-		</div>
+      <!-- Aadhaar & Handicapped row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Aadhaar Number<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="aadhaarNumber" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('aadhaarNumber')?.invalid &&
+              (form.get('aadhaarNumber')?.touched || submitted)
+            "
+          >
+            Aadhaar number is required and must be 12 digits.
+          </p>
+        </div>
+        <div>
+          <mat-label
+            class="text-xs font-medium text-gray-600 dark:text-gray-300"
+          >
+            Handicapped<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </mat-label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <mat-select formControlName="handicapped">
+              <mat-option
+                *ngFor="let h of handicappedOptions"
+                [value]="h.value"
+              >
+                {{ h.label }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('handicapped')?.invalid &&
+              (form.get('handicapped')?.touched || submitted)
+            "
+          >
+            Handicapped field is required.
+          </p>
+        </div>
+      </div>
 
-		<!-- Modal Footer -->
-		<div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2">
-			<button
-				type="button"
-				(click)="onClose()"
-				class="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-			>
-				Cancel
-			</button>
-			<button
-				type="submit"
-				class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
-				[disabled]="(form.invalid && (form.touched || submitted)) || loading"
-			>
-				Save
-			</button>
-		</div>
-	</form>
+      <!-- Address -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div class="md:col-span-2">
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Address<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <textarea matInput rows="3" formControlName="address"></textarea>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('address')?.invalid &&
+              (form.get('address')?.touched || submitted)
+            "
+          >
+            Address is required.
+          </p>
+        </div>
+      </div>
+
+      <!-- Contact -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Mobile Number<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="mobileNo" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('mobileNo')?.invalid &&
+              (form.get('mobileNo')?.touched || submitted)
+            "
+          >
+            Mobile number is required and must be 10 digits.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Email
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="email" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('email')?.invalid &&
+              (form.get('email')?.touched || submitted)
+            "
+          >
+            Please enter a valid email address.
+          </p>
+        </div>
+      </div>
+
+      <!-- Birth details -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Birth Place<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="birthPlace" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('birthPlace')?.invalid &&
+              (form.get('birthPlace')?.touched || submitted)
+            "
+          >
+            Birth place is required.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Date of Birth<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input
+              matInput
+              [matDatepicker]="dobPicker"
+              formControlName="dateOfBirth"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="dobPicker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #dobPicker></mat-datepicker>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('dateOfBirth')?.invalid &&
+              (form.get('dateOfBirth')?.touched || submitted)
+            "
+          >
+            Date of birth is required.
+          </p>
+        </div>
+      </div>
+
+      <!-- Education (last row) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Previous School Name<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="previousSchoolName" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('previousSchoolName')?.invalid &&
+              (form.get('previousSchoolName')?.touched || submitted)
+            "
+          >
+            Previous school name is required.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Latest Education<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="latestEducation" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('latestEducation')?.invalid &&
+              (form.get('latestEducation')?.touched || submitted)
+            "
+          >
+            Latest education is required.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div
+      class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-2"
+    >
+      <button
+        type="button"
+        (click)="onClose()"
+        class="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+        [disabled]="(form.invalid && (form.touched || submitted)) || loading"
+      >
+        Save
+      </button>
+    </div>
+  </form>
 </div>
