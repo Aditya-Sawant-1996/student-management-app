@@ -1,35 +1,35 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { Student, StudentService } from './student.service';
-import { AddEditStudentModalComponent } from '../../shared/add-edit-student-modal/add-edit-student-modal.component';
+import { Subject as RxSubject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import { SubjectModel, SubjectService } from './subject.service';
+import { AddEditSubjectModalComponent } from '../../shared/add-edit-subject-modal/add-edit-subject-modal.component';
 import { DeleteConfirmModalComponent } from '../../shared/delete-confirm-modal/delete-confirm-modal.component';
-import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
-  selector: 'app-student',
-  templateUrl: './student.component.html',
+  selector: 'app-subject',
+  templateUrl: './subject.component.html',
+  styleUrls: ['./subject.component.scss']
 })
-export class StudentComponent implements OnInit, OnDestroy {
-  students: Student[] = [];
+export class SubjectComponent implements OnInit, OnDestroy {
+  subjects: SubjectModel[] = [];
   search = '';
   page = 1;
   limit = 10;
   total = 0;
   loading = false;
   pageSizeOptions: number[] = [10, 20, 30, 100];
-  private searchSubject = new Subject<string>();
-  private searchSub?: Subscription;
 
   tableHeaders = [
-    { field: 'name', label: 'Name' },
-    { field: 'mobileNo', label: 'Mobile' },
-    { field: 'aadhaarNumber', label: 'Aadhaar Number' },
+    { field: 'subjectName', label: 'Subject Name' },
   ];
 
-  searchPlaceholder = 'Search by name, mobile or batch...';
+  searchPlaceholder = 'Search by subject name...';
+
+  private searchSubject = new RxSubject<string>();
+  private searchSub?: Subscription;
 
   constructor(
-    private studentService: StudentService,
+    private subjectService: SubjectService,
     private dialog: MatDialog,
   ) {}
 
@@ -51,10 +51,10 @@ export class StudentComponent implements OnInit, OnDestroy {
 
   load(): void {
     this.loading = true;
-    this.studentService.list(this.page, this.limit, this.search).subscribe({
+    this.subjectService.list(this.page, this.limit, this.search).subscribe({
       next: (res) => {
         if (res.success) {
-          this.students = res.data;
+          this.subjects = res.data;
           this.total = res.total;
           this.page = res.page;
           this.limit = res.limit;
@@ -72,10 +72,9 @@ export class StudentComponent implements OnInit, OnDestroy {
   }
 
   openAddModal(): void {
-    const dialogRef = this.dialog.open(AddEditStudentModalComponent, {
-      // width: '640px',
-      data: { student: null },
-      panelClass: 'student-dialog-panel',
+    const dialogRef = this.dialog.open(AddEditSubjectModalComponent, {
+      data: { subject: null },
+      panelClass: 'subject-dialog-panel',
       closeOnNavigation: false,
       disableClose: true,
     });
@@ -86,11 +85,10 @@ export class StudentComponent implements OnInit, OnDestroy {
     });
   }
 
-  openEditModal(student: Student): void {
-    const dialogRef = this.dialog.open(AddEditStudentModalComponent, {
-      // width: '640px',
-      data: { student },
-      panelClass: 'student-dialog-panel',
+  openEditModal(subject: SubjectModel): void {
+    const dialogRef = this.dialog.open(AddEditSubjectModalComponent, {
+      data: { subject },
+      panelClass: 'subject-dialog-panel',
       closeOnNavigation: false,
       disableClose: true,
     });
@@ -101,13 +99,13 @@ export class StudentComponent implements OnInit, OnDestroy {
     });
   }
 
-  onDelete(student: Student): void {
-    if (!student._id) {
+  onDelete(subject: SubjectModel): void {
+    if (!subject._id) {
       return;
     }
     const dialogRef = this.dialog.open(DeleteConfirmModalComponent, {
       data: {
-        message: 'Are you sure you want to delete this student?',
+        message: 'Are you sure you want to delete this subject?',
       },
       panelClass: 'confirm-dialog-panel',
       closeOnNavigation: false,
@@ -118,7 +116,7 @@ export class StudentComponent implements OnInit, OnDestroy {
       if (!result) {
         return;
       }
-      this.studentService.delete(student._id as string).subscribe(() => {
+      this.subjectService.delete(subject._id as string).subscribe(() => {
         this.load();
       });
     });

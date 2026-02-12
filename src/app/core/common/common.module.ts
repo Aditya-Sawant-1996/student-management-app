@@ -4,9 +4,10 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ListComponent } from '../../shared/list/list.component';
 import { MaterialModule } from '../../shared/material/material.module';
+import { DeleteConfirmModalComponent } from '../../shared/delete-confirm-modal/delete-confirm-modal.component';
 
 @NgModule({
-  declarations: [ListComponent],
+  declarations: [ListComponent, DeleteConfirmModalComponent],
   imports: [
     CommonModule,
     FormsModule,
@@ -19,7 +20,8 @@ import { MaterialModule } from '../../shared/material/material.module';
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
-    ListComponent
+    ListComponent,
+    DeleteConfirmModalComponent
   ]
 })
 export class CommonModuleShared {}

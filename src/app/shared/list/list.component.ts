@@ -14,6 +14,7 @@ export class ListComponent {
   @Input() showEditAction = true;
   @Input() showDeleteAction = true;
   @Input() showViewAction = true;
+  @Input() loading = false;
   @Input() page = 1;
   @Input() totalPages = 1;
   @Input() total = 0;

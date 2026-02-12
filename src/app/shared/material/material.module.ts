@@ -7,6 +7,7 @@ import { MatNativeDateModule, MatOptionModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   exports: [
@@ -18,7 +19,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatIconModule,
     MatDialogModule,
     MatOptionModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatProgressSpinnerModule
   ],
   imports: [
     MatFormFieldModule,
@@ -29,7 +31,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
     MatIconModule,
     MatDialogModule,
     MatOptionModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    MatProgressSpinnerModule
   ],
 })
 export class MaterialModule {}
