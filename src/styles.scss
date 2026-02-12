@@ -53,3 +53,14 @@
 
 /* If your app later uses mat-error/mat-hint, they will still render;
    this only removes the default empty spacing. */
+
+   /* Make the page-size mat-select height similar to the pagination buttons */
+.page-size-field {
+  --mat-form-field-container-height: 24px;
+  --mat-form-field-container-vertical-padding: 0px;
+  width: 5rem; /* match Tailwind w-24 */
+  display: inline-flex;
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+  }
+}

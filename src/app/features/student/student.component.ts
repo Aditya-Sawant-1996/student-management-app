@@ -11,14 +11,15 @@ export class StudentComponent implements OnInit {
   students: Student[] = [];
   search = '';
   page = 1;
-  limit = 5;
+  limit = 10;
   total = 0;
   loading = false;
+  pageSizeOptions: number[] = [10, 20, 30, 100];
 
   tableHeaders = [
     { field: 'name', label: 'Name' },
     { field: 'mobileNo', label: 'Mobile' },
-    { field: 'batch', label: 'Batch' },
+    { field: 'aadhaarNumber', label: 'Aadhaar Number' },
   ];
 
   searchPlaceholder = 'Search by name, mobile or batch...';
@@ -114,5 +115,14 @@ export class StudentComponent implements OnInit {
       this.page++;
       this.load();
     }
+  }
+
+  onLimitChange(limit: number): void {
+    if (this.limit === limit) {
+      return;
+    }
+    this.limit = limit;
+    this.page = 1;
+    this.load();
   }
 }

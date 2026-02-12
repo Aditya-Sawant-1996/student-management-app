@@ -5,7 +5,8 @@ import { StudentComponent } from './student.component';
 const routes: Routes = [
   {
     path: '',
-    component: StudentComponent
+    component: StudentComponent,
+    data: { title: 'Student' }
   }
 ];
 

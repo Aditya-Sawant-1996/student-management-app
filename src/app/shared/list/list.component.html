@@ -12,7 +12,7 @@
 			(click)="onAdd()"
 			class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium self-end sm:self-auto"
 		>
-			Add
+			{{ addButtonLabel }}
 		</button>
 	</div>
 
@@ -48,22 +48,69 @@
 					</td>
 					<td class="px-4 py-2 text-right space-x-2">
 						<button
+							*ngIf="showViewAction"
 							type="button"
-							(click)="onEdit(row)"
-							class="px-3 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium"
+							(click)="onView(row)"
+							class="px-3 py-1 rounded bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium align-middle"
 						>
-							Edit
+							<mat-icon>visibility</mat-icon>
 						</button>
 						<button
+							*ngIf="showEditAction"
+							type="button"
+							(click)="onEdit(row)"
+							class="px-3 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-medium align-middle"
+						>
+							<mat-icon>edit</mat-icon>
+						</button>
+						<button
+							*ngIf="showDeleteAction"
 							type="button"
 							(click)="onDelete(row)"
-							class="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium"
+							class="px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white text-xs font-medium align-middle"
 						>
-							Delete
+							<mat-icon>delete</mat-icon>
 						</button>
 					</td>
 				</tr>
 			</tbody>
 		</table>
+	</div>
+
+	<!-- Pagination & page size -->
+	<div
+		class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 mt-2"
+		*ngIf="total > 0"
+	>
+		<div>
+			Page {{ page }} of {{ totalPages }} ({{ total }} students)
+		</div>
+		<div class="flex items-center space-x-2">
+			<span>Show</span>
+			<mat-form-field appearance="outline" class="w-24 text-xs page-size-field">
+				<mat-select [value]="limit" (selectionChange)="onLimitChange($event.value)">
+					<mat-option *ngFor="let opt of limitOptions" [value]="opt">
+						{{ opt }}
+					</mat-option>
+				</mat-select>
+			</mat-form-field>
+			<span>per page</span>
+			<button
+				type="button"
+				(click)="onPrevPage()"
+				class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+				[disabled]="page <= 1"
+			>
+				Previous
+			</button>
+			<button
+				type="button"
+				(click)="onNextPage()"
+				class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+				[disabled]="page >= totalPages"
+			>
+				Next
+			</button>
+		</div>
 	</div>
 </section>
