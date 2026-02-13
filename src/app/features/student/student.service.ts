@@ -2,6 +2,11 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+export interface SelectedSubject {
+  _id: string;
+  name: string;
+}
+
 export interface Student {
   _id?: string;
   name?: string; // derived on backend from firstName + surName
@@ -10,6 +15,7 @@ export interface Student {
   guardianName: string;
   mothersName: string;
   subject: string[];
+  selectedSubjects?: SelectedSubject[];
   batch?: string;
   address: string;
   aadhaarNumber: string;
@@ -22,6 +28,10 @@ export interface Student {
   latestEducation: string;
   previousSchoolName: string;
   photo: string; // server path to uploaded photo
+  // Derived display fields for UI
+  displayName?: string;
+  displaySubjects?: string;
+  subjectsTooltip?: string;
 }
 
 export interface StudentListResponse {

@@ -1,0 +1,221 @@
+import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { FeesModel, FeesService } from '../../features/fees/fees.service';
+import { Student, StudentService } from '../../features/student/student.service';
+
+@Component({
+  selector: 'app-add-edit-fees-modal',
+  templateUrl: './add-edit-fees-modal.component.html',
+  styleUrls: ['./add-edit-fees-modal.component.scss'],
+})
+export class AddEditFeesModalComponent implements OnInit, OnDestroy {
+  fees: FeesModel | null = null;
+
+  form: FormGroup;
+  submitted = false;
+  loading = false;
+
+  students: Student[] = [];
+  studentSearchControl = new FormControl('');
+  private studentSearch$ = new Subject<string>();
+  private studentSearchSub?: Subscription;
+
+  get isEdit(): boolean {
+    return !!(this.fees && this.fees._id);
+  }
+
+  constructor(
+    private fb: FormBuilder,
+    private feesService: FeesService,
+    private studentService: StudentService,
+    @Inject(MAT_DIALOG_DATA) public data: { fees: FeesModel | null },
+    private dialogRef: MatDialogRef<AddEditFeesModalComponent>,
+  ) {
+    this.fees = data?.fees ?? null;
+
+    this.form = this.fb.group({
+      selectedStudentId: ['', [Validators.required]],
+      subjects: [[], [Validators.required]],
+      admissionDate: [null, [Validators.required]],
+      totalFees: ['', [Validators.required]],
+      totalInstallments: [null, [Validators.required, Validators.min(1)]],
+      monthlyInstallments: [{ value: '', disabled: true }],
+      instalmentNumber: ['', [Validators.required]],
+      feesPaid: ['', [Validators.required]],
+      date: [new Date(), [Validators.required]],
+    });
+  }
+
+  ngOnInit(): void {
+    this.submitted = false;
+
+    this.studentSearchSub = this.studentSearch$
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        switchMap((term) => this.studentService.list(1, 20, term)),
+      )
+      .subscribe((res) => {
+        if (res.success) {
+          this.students = res.data;
+        } else {
+          this.students = [];
+        }
+      });
+
+    this.studentSearchControl.valueChanges.subscribe((value) => {
+      if (typeof value === 'string') {
+        this.studentSearch$.next(value || '');
+      }
+    });
+
+    if (this.fees) {
+      this.form.patchValue({
+        selectedStudentId: this.fees.selectedStudent?.studentId,
+        subjects: this.fees.subjects || [],
+        admissionDate: this.fees.admissionDate
+          ? new Date(this.fees.admissionDate)
+          : null,
+        totalFees: this.formatAmount(this.fees.totalFees),
+        totalInstallments: this.fees.totalInstallments,
+        monthlyInstallments: this.formatAmount(this.fees.monthlyInstallments),
+        instalmentNumber: this.fees.instalmentNumber,
+        feesPaid: this.formatAmount(this.fees.feesPaid),
+        date: this.fees.date ? new Date(this.fees.date) : new Date(),
+      });
+
+      if (this.fees.selectedStudent?.name) {
+        this.studentSearchControl.setValue(this.fees.selectedStudent.name);
+      }
+    }
+
+    this.form.get('totalFees')?.valueChanges.subscribe(() => {
+      this.updateMonthlyInstallmentsDisplay();
+    });
+    this.form.get('totalInstallments')?.valueChanges.subscribe(() => {
+      this.updateMonthlyInstallmentsDisplay();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.studentSearchSub?.unsubscribe();
+  }
+
+  displayStudent(student: Student | string | null): string {
+    if (!student) return '';
+    if (typeof student === 'string') return student;
+    return `${student.name} (${student.aadhaarNumber}) - ${student.mobileNo}`;
+  }
+
+  onStudentSelected(student: Student): void {
+    this.form.patchValue({
+      selectedStudentId: student._id,
+      subjects: (student as any).selectedSubjects?.map((s: any) => s.name) ||
+        student.subject || [],
+    });
+  }
+
+  get subjectsList(): string[] {
+    return this.form.get('subjects')?.value || [];
+  }
+
+  onClose(): void {
+    this.dialogRef.close(false);
+  }
+
+  onSubmit(): void {
+    this.submitted = true;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    const formValue = this.form.getRawValue();
+
+    const totalFeesNum = this.parseAmount(formValue.totalFees);
+    const totalInstallmentsNum = Number(formValue.totalInstallments);
+    const feesPaidNum = this.parseAmount(formValue.feesPaid);
+
+    const payload: any = {
+      studentId: formValue.selectedStudentId,
+      admissionDate: this.toIsoDate(formValue.admissionDate),
+      totalFees: totalFeesNum,
+      totalInstallments: totalInstallmentsNum,
+      monthlyInstallments:
+        totalInstallmentsNum > 0 ? totalFeesNum / totalInstallmentsNum : 0,
+      instalmentNumber: formValue.instalmentNumber,
+      feesPaid: feesPaidNum,
+      date: this.toIsoDate(formValue.date),
+    };
+
+    this.loading = true;
+
+    if (this.isEdit && this.fees && this.fees._id) {
+      this.feesService.update(this.fees._id, payload).subscribe({
+        next: () => {
+          this.loading = false;
+          this.submitted = false;
+          this.form.reset();
+          this.dialogRef.close(true);
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
+    } else {
+      this.feesService.create(payload).subscribe({
+        next: () => {
+          this.loading = false;
+          this.submitted = false;
+          this.form.reset();
+          this.dialogRef.close(true);
+        },
+        error: () => {
+          this.loading = false;
+        },
+      });
+    }
+  }
+
+  private toIsoDate(value: any): string {
+    const date: Date = value instanceof Date ? value : new Date(value);
+    return date.toISOString();
+  }
+
+  private parseAmount(value: string | number): number {
+    if (typeof value === 'number') return value;
+    if (!value) return 0;
+    const cleaned = value.toString().replace(/,/g, '');
+    const num = Number(cleaned);
+    return isNaN(num) ? 0 : num;
+  }
+
+  private formatAmount(value: number | null | undefined): string {
+    if (value === null || value === undefined) return '';
+    return value.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  }
+
+  onAmountBlur(controlName: 'totalFees' | 'feesPaid'): void {
+    const control = this.form.get(controlName);
+    if (!control) {
+      return;
+    }
+    const num = this.parseAmount(control.value);
+    control.setValue(this.formatAmount(num));
+  }
+
+  private updateMonthlyInstallmentsDisplay(): void {
+    const totalFeesNum = this.parseAmount(this.form.get('totalFees')?.value);
+    const totalInstallmentsNum = Number(
+      this.form.get('totalInstallments')?.value,
+    );
+    const monthly =
+      totalInstallmentsNum > 0 ? totalFeesNum / totalInstallmentsNum : 0;
+    this.form.get('monthlyInstallments')?.setValue(
+      this.formatAmount(monthly),
+      { emitEvent: false },
+    );
+  }
+}

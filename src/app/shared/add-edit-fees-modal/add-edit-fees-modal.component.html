@@ -1,0 +1,269 @@
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-lg">
+  <div
+    class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700"
+  >
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
+      {{ isEdit ? 'Edit Fees' : 'Add Fees' }}
+    </h3>
+    <button
+      type="button"
+      (click)="onClose()"
+      class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+    >
+      ✕
+    </button>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="px-4 py-4 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+      <!-- Student select with search -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+        >
+          Student<span class="text-red-500 dark:text-red-400 font-semibold"
+            >*</span
+          >
+        </label>
+        <mat-form-field appearance="outline" class="w-full text-sm">
+          <input
+            type="text"
+            matInput
+            placeholder="Search by name, Aadhaar or mobile"
+            [matAutocomplete]="studentAuto"
+            [formControl]="studentSearchControl"
+          />
+          <mat-autocomplete
+            #studentAuto="matAutocomplete"
+            [displayWith]="displayStudent.bind(this)"
+            (optionSelected)="onStudentSelected($event.option.value)"
+          >
+            <mat-option *ngFor="let s of students" [value]="s">
+              {{ s.name }} ({{ s.aadhaarNumber }}) - {{ s.mobileNo }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+        <p
+          class="mt-1 text-xs text-red-500"
+          *ngIf="
+            form.get('selectedStudentId')?.invalid &&
+            (form.get('selectedStudentId')?.touched || submitted)
+          "
+        >
+          Student is required.
+        </p>
+      </div>
+
+      <!-- Subjects (chips) -->
+      <div>
+        <label
+          class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+        >
+          Subjects<span class="text-red-500 dark:text-red-400 font-semibold"
+            >*</span
+          >
+        </label>
+        <div class="min-h-[42px] flex flex-wrap gap-1 items-center border border-gray-300 dark:border-gray-700 rounded px-2 py-1">
+          <ng-container *ngIf="subjectsList.length; else noSubjectsTpl">
+            <mat-chip-listbox aria-label="Subjects">
+              <mat-chip *ngFor="let subj of subjectsList" selected>
+                {{ subj }}
+              </mat-chip>
+            </mat-chip-listbox>
+          </ng-container>
+          <ng-template #noSubjectsTpl>
+            <span class="text-xs text-gray-500 dark:text-gray-400"
+              >Select a student to see subjects.</span
+            >
+          </ng-template>
+        </div>
+        <p
+          class="mt-1 text-xs text-red-500"
+          *ngIf="
+            form.get('subjects')?.invalid &&
+            (form.get('subjects')?.touched || submitted)
+          "
+        >
+          Subjects are required.
+        </p>
+      </div>
+
+      <!-- Admission date & Date -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Admission Date<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput [matDatepicker]="admissionDp" formControlName="admissionDate" />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="admissionDp"
+            ></mat-datepicker-toggle>
+            <mat-datepicker #admissionDp></mat-datepicker>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('admissionDate')?.invalid &&
+              (form.get('admissionDate')?.touched || submitted)
+            "
+          >
+            Admission date is required and cannot be in the future.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Date<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput [matDatepicker]="dateDp" formControlName="date" />
+            <mat-datepicker-toggle matSuffix [for]="dateDp"></mat-datepicker-toggle>
+            <mat-datepicker #dateDp></mat-datepicker>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('date')?.invalid &&
+              (form.get('date')?.touched || submitted)
+            "
+          >
+            Date is required and cannot be in the future.
+          </p>
+        </div>
+      </div>
+
+      <!-- Fees & Installments row -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Total Fees<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+				<input matInput formControlName="totalFees" (blur)="onAmountBlur('totalFees')" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('totalFees')?.invalid &&
+              (form.get('totalFees')?.touched || submitted)
+            "
+          >
+            Total fees is required.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Total Installments<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput type="number" formControlName="totalInstallments" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('totalInstallments')?.invalid &&
+              (form.get('totalInstallments')?.touched || submitted)
+            "
+          >
+            Total installments is required and must be at least 1.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Monthly Installments
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="monthlyInstallments" [disabled]="true" />
+          </mat-form-field>
+        </div>
+      </div>
+
+      <!-- Installment number & Fees paid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Installment Number<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="instalmentNumber" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('instalmentNumber')?.invalid &&
+              (form.get('instalmentNumber')?.touched || submitted)
+            "
+          >
+            Installment number is required.
+          </p>
+        </div>
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Fees Paid<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+				<input matInput formControlName="feesPaid" (blur)="onAmountBlur('feesPaid')" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('feesPaid')?.invalid &&
+              (form.get('feesPaid')?.touched || submitted)
+            "
+          >
+            Fees paid is required.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end space-x-2"
+    >
+      <button
+        type="button"
+        (click)="onClose()"
+        class="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        [disabled]="loading || form.invalid"
+        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50"
+      >
+        {{ isEdit ? 'Update' : 'Save' }}
+      </button>
+    </div>
+  </form>
+</div>

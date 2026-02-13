@@ -1,7 +1,8 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Student, StudentService } from '../../features/student/student.service';
+import { SelectedSubject, Student, StudentService } from '../../features/student/student.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { SubjectModel, SubjectService } from '../../features/subject/subject.service';
 
 @Component({
   selector: 'app-add-edit-student-modal',
@@ -30,14 +31,7 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
     { label: 'No', value: 'No' },
   ];
 
-  allSubjects: string[] = [
-    'Mathematics',
-    'Science',
-    'English',
-    'History',
-    'Geography',
-    'Computer Science',
-  ];
+  subjects: SubjectModel[] = [];
   subjectSearch = '';
 
   get isEdit(): boolean {
@@ -47,6 +41,7 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private studentService: StudentService,
+    private subjectService: SubjectService,
     @Inject(MAT_DIALOG_DATA) public data: { student: Student | null },
     private dialogRef: MatDialogRef<AddEditStudentModalComponent>
   ) {
@@ -60,31 +55,32 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
       surName: ['', [Validators.required, Validators.pattern(namePattern)]],
       firstName: ['', [Validators.required, Validators.pattern(namePattern)]],
       guardianName: ['', [Validators.required, Validators.pattern(namePattern)]],
-      mothersName: ['', [Validators.required, Validators.pattern(namePattern)]],
+      mothersName: ['', [Validators.pattern(namePattern)]],
       subject: [[], [Validators.required]],
       batch: [''],
-      address: ['', [Validators.required]],
-      aadhaarNumber: ['', [Validators.required, Validators.pattern(aadhaarPattern)]],
+      address: [''],
+      aadhaarNumber: ['', [Validators.pattern(aadhaarPattern)]],
       mobileNo: ['', [Validators.required, Validators.pattern(mobilePattern)]],
       email: ['', [Validators.email]],
-      birthPlace: ['', [Validators.required]],
-      dateOfBirth: [null, [Validators.required]],
-      gender: ['', [Validators.required]],
-      handicapped: ['', [Validators.required]],
-      latestEducation: ['', [Validators.required]],
-      previousSchoolName: ['', [Validators.required]],
+      birthPlace: [''],
+      dateOfBirth: [null],
+      gender: [''],
+      handicapped: [''],
+      latestEducation: [''],
+      previousSchoolName: [''],
     });
   }
 
   ngOnInit(): void {
     this.submitted = false;
+		this.loadSubjects();
     if (this.student) {
       this.form.reset({
         surName: this.student.surName ?? '',
         firstName: this.student.firstName ?? '',
         guardianName: this.student.guardianName ?? '',
         mothersName: this.student.mothersName ?? '',
-        subject: this.student.subject ?? [],
+			subject: [],
         batch: this.student.batch ?? '',
         address: this.student.address ?? '',
         aadhaarNumber: this.student.aadhaarNumber ?? '',
@@ -147,16 +143,27 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
 
     const formValue = this.form.value;
 
+		const selectedSubjectIds: string[] = Array.isArray(formValue.subject)
+			? formValue.subject
+			: [];
+		const selectedSubjectsFull: SubjectModel[] = this.subjects.filter(
+			(s) => s._id && selectedSubjectIds.includes(s._id),
+		);
+		const selectedSubjectsForSave: SelectedSubject[] = selectedSubjectsFull.map(
+			(s) => ({ _id: s._id as string, name: s.subjectName }),
+		);
+		const selectedSubjectNames = selectedSubjectsForSave.map((s) => s.name);
+
     const payload = new FormData();
     Object.keys(formValue).forEach((key) => {
       const value = (formValue as any)[key];
       if (value === null || value === undefined || value === '') {
         return;
       }
-      if (key === 'subject' && Array.isArray(value)) {
-        value.forEach((s: string) => payload.append('subject', s));
-        return;
-      }
+      if (key === 'subject') {
+			// handled separately below
+			return;
+		}
       if (key === 'dateOfBirth') {
         const date: Date = value instanceof Date ? value : new Date(value);
         payload.append('dateOfBirth', date.toISOString());
@@ -164,6 +171,16 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
       }
       payload.append(key, value);
     });
+
+		// send legacy subject names for compatibility
+		selectedSubjectNames.forEach((name) => payload.append('subject', name));
+		// send selectedSubjects array as JSON string for backend parsing
+		if (selectedSubjectsForSave.length) {
+			payload.append(
+				'selectedSubjects',
+				JSON.stringify(selectedSubjectsForSave),
+			);
+		}
 
     if (this.selectedPhoto) {
       payload.append('photo', this.selectedPhoto);
@@ -263,9 +280,51 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
     return base + (path.startsWith('/') ? path : '/' + path);
   }
 
-  get filteredSubjects(): string[] {
+  private loadSubjects(): void {
+    this.subjectService.list(1, 1000, '').subscribe({
+      next: (res) => {
+        this.subjects = res.data || [];
+        if (this.student) {
+          this.preselectSubjects();
+        }
+      },
+      error: () => {
+        this.subjects = [];
+      },
+    });
+  }
+
+  private preselectSubjects(): void {
+    if (!this.student) {
+      return;
+    }
+    const control = this.form.get('subject');
+    if (!control) {
+      return;
+    }
+    let selectedIds: string[] = [];
+
+    const selectedSubjects =
+      (this.student as any).selectedSubjects as SelectedSubject[] | undefined;
+    if (selectedSubjects && selectedSubjects.length) {
+      selectedIds = selectedSubjects
+        .map((s) => s._id)
+        .filter((id): id is string => !!id);
+    } else if (this.student.subject && this.student.subject.length) {
+      selectedIds = this.subjects
+        .filter((s) => this.student!.subject.includes(s.subjectName))
+        .map((s) => s._id as string)
+        .filter((id): id is string => !!id);
+    }
+
+    control.setValue(selectedIds);
+  }
+
+  get filteredSubjects(): SubjectModel[] {
     const search = this.subjectSearch.toLowerCase();
-    return this.allSubjects.filter((s) => s.toLowerCase().includes(search));
+    return this.subjects.filter((s) =>
+      s.subjectName.toLowerCase().includes(search),
+    );
   }
 
 }

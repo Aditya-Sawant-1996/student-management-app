@@ -28,6 +28,11 @@ const routes: Routes = [
           import('./features/subject/subject.module').then(m => m.SubjectModule)
       },
       {
+			path: 'fees',
+			loadChildren: () =>
+				import('./features/fees/fees.module').then(m => m.FeesModule)
+		},
+      {
         path: '',
         pathMatch: 'full',
         redirectTo: 'dashboard'

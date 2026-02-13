@@ -7,7 +7,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 })
 export class ListComponent {
 
-  @Input() tableHeaders: { field: string; label: string }[] = [];
+  @Input() tableHeaders: { field: string; label: string; tooltipField?: string }[] = [];
   @Input() tableData: any[] = [];
   @Input() searchPlaceholder = 'Search...';
   @Input() addButtonLabel = 'Add';
@@ -20,6 +20,7 @@ export class ListComponent {
   @Input() total = 0;
   @Input() limit = 10;
   @Input() limitOptions: number[] = [10, 20, 30, 100];
+  @Input() moduleLabel = 'items';
 
   @Output() addClicked = new EventEmitter<void>();
   @Output() editClicked = new EventEmitter<any>();

@@ -4,6 +4,7 @@
     [tableData]="students"
     [searchPlaceholder]="searchPlaceholder"
     [addButtonLabel]="'Add New Student'"
+    [moduleLabel]="'students'"
     [loading]="loading"
     [page]="page"
     [totalPages]="totalPages"
@@ -17,5 +18,6 @@
     (prevPageClicked)="prevPage()"
     (nextPageClicked)="nextPage()"
     (limitChange)="onLimitChange($event)"
+    [showViewAction]="false"
   ></app-list>
 </section>

@@ -1,10 +1,10 @@
 <section class="space-y-4">
   <app-list
     [tableHeaders]="tableHeaders"
-    [tableData]="subjects"
+    [tableData]="fees"
     [searchPlaceholder]="searchPlaceholder"
-    [addButtonLabel]="'Add New Subject'"
-    [moduleLabel]="'subjects'"
+    [addButtonLabel]="'Add Fees'"
+    [moduleLabel]="'fees records'"
     [loading]="loading"
     [page]="page"
     [totalPages]="totalPages"
@@ -18,7 +18,5 @@
     (prevPageClicked)="prevPage()"
     (nextPageClicked)="nextPage()"
     (limitChange)="onLimitChange($event)"
-    [showViewAction]="false"
-    [showEditAction]="false"
   ></app-list>
 </section>

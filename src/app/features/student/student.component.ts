@@ -21,12 +21,12 @@ export class StudentComponent implements OnInit, OnDestroy {
   private searchSub?: Subscription;
 
   tableHeaders = [
-    { field: 'name', label: 'Name' },
+    { field: 'displayName', label: 'Name' },
     { field: 'mobileNo', label: 'Mobile' },
-    { field: 'aadhaarNumber', label: 'Aadhaar Number' },
+    { field: 'displaySubjects', label: 'Subjects', tooltipField: 'subjectsTooltip' },
   ];
 
-  searchPlaceholder = 'Search by name, mobile or batch...';
+  searchPlaceholder = 'Search by name, mobile or aadhaar number...';
 
   constructor(
     private studentService: StudentService,
@@ -54,7 +54,12 @@ export class StudentComponent implements OnInit, OnDestroy {
     this.studentService.list(this.page, this.limit, this.search).subscribe({
       next: (res) => {
         if (res.success) {
-          this.students = res.data;
+          this.students = res.data.map((s) => ({
+            ...s,
+            displayName: this.buildDisplayName(s),
+            displaySubjects: this.buildDisplaySubjects(s),
+            subjectsTooltip: this.buildSubjectsTooltip(s),
+          }));
           this.total = res.total;
           this.page = res.page;
           this.limit = res.limit;
@@ -65,6 +70,42 @@ export class StudentComponent implements OnInit, OnDestroy {
         this.loading = false;
       },
     });
+  }
+
+  private buildDisplayName(student: Student): string {
+    const parts = [student.firstName, student.guardianName, student.surName].filter(
+      (p) => !!p,
+    );
+    return parts.join(' ');
+  }
+
+  private buildDisplaySubjects(student: Student): string {
+    const subjectNames = this.getSubjectNames(student);
+
+    if (!subjectNames.length) {
+      return '-';
+    }
+
+    const maxVisible = 2;
+    if (subjectNames.length <= maxVisible) {
+      return subjectNames.join(', ');
+    }
+
+    const visible = subjectNames.slice(0, maxVisible);
+    const remaining = subjectNames.length - maxVisible;
+    return `${visible.join(', ')} +${remaining} more`;
+  }
+
+  private buildSubjectsTooltip(student: Student): string {
+    const subjectNames = this.getSubjectNames(student);
+    return subjectNames.join(', ');
+  }
+
+  private getSubjectNames(student: Student): string[] {
+    return (student.subject && student.subject.length
+      ? student.subject
+      : (student.selectedSubjects || []).map((s) => s.name)
+    ).filter((n) => !!n);
   }
 
   onSearchChange(value: string): void {

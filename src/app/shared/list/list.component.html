@@ -44,6 +44,7 @@
 						<td
 							*ngFor="let h of tableHeaders"
 							class="px-4 py-2 text-gray-800 dark:text-gray-100"
+							[matTooltip]="h.tooltipField ? row[h.tooltipField] : null"
 						>
 							{{ row[h.field] }}
 						</td>
@@ -100,7 +101,7 @@
 		*ngIf="total > 0"
 	>
 		<div>
-			Page {{ page }} of {{ totalPages }} ({{ total }} students)
+			Page {{ page }} of {{ totalPages }} ({{ total }} {{ moduleLabel }})
 		</div>
 		<div class="flex items-center space-x-2">
 			<span>Show</span>
