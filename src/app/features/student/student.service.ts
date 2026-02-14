@@ -32,6 +32,10 @@ export interface Student {
   displayName?: string;
   displaySubjects?: string;
   subjectsTooltip?: string;
+  // Fees summary fields populated from backend list API
+  totalFees?: number;
+  totalFeesPaid?: number;
+  pendingFees?: number;
 }
 
 export interface StudentListResponse {

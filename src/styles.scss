@@ -26,9 +26,50 @@
   color: #f9fafb;
 }
 
-.mat-mdc-select-panel {
-  border-radius: 0.5rem;
+/* Ensure actual matInput text is visible in dark mode (including patched values) */
+.dark .mat-mdc-input-element {
+  color: #f9fafb;
 }
+
+/* Improve dark mode visibility for mat-select options */
+.dark .mat-mdc-option,
+.dark .mat-mdc-option .mdc-list-item__primary-text {
+  color: #f9fafb;
+}
+
+.dark .mat-mdc-option.mdc-list-item--selected,
+.dark .mat-mdc-option.mdc-list-item--activated,
+.dark .mat-mdc-option:hover {
+  background-color: #1f2937; /* gray-800 */
+}
+
+.dark .mat-mdc-select-panel {
+  border-radius: 0.5rem;
+  border: 1px solid #4b5563; /* gray-600 */
+}
+
+/* Ensure select trigger text/icon are visible in dark mode */
+.dark .mat-mdc-select-value-text,
+.dark .mat-mdc-select-arrow {
+  color: #f9fafb;
+}
+
+/* Dark mode styles for Material checkboxes (including those inside mat-select options) */
+.dark .mat-mdc-checkbox {
+  /* Icon (box) colors */
+  --mdc-checkbox-selected-icon-color: #3b82f6; /* blue-500 */
+  --mdc-checkbox-unselected-icon-color: #e5e7eb; /* gray-200 */
+  --mdc-checkbox-selected-hover-icon-color: #60a5fa; /* blue-400 */
+  --mdc-checkbox-unselected-hover-icon-color: #f9fafb;
+  --mdc-checkbox-disabled-selected-icon-color: #6b7280; /* gray-500 */
+  --mdc-checkbox-disabled-unselected-icon-color: #4b5563; /* gray-600 */
+  --mdc-checkbox-selected-checkmark-color: #111827; /* gray-900 background for contrast */
+}
+
+.dark .mat-mdc-checkbox .mdc-label {
+  color: #f9fafb;
+}
+
 
 /* Dark mode placeholder & label colors for Material inputs/selects */
 .dark .mat-mdc-input-element::placeholder {
@@ -68,3 +109,53 @@
 .mat-mdc-dialog-container .mdc-dialog__surface {
   background-color: transparent !important;
 }
+
+/* Toast styles for CommonFunctionService */
+.toast-success {
+  background-color: #16a34a !important; /* green-600 */
+  color: #ffffff !important;
+}
+
+.toast-error {
+  background-color: #dc2626 !important; /* red-600 */
+  color: #ffffff !important;
+}
+
+/* Scrollbar styling for light & dark modes */
+
+/* Base (light mode) scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9ca3af #f3f4f6; /* thumb, track */
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f3f4f6; /* gray-100 */
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #9ca3af; /* gray-400 */
+  border-radius: 9999px;
+  border: 2px solid #f3f4f6;
+}
+
+/* Dark mode scrollbars */
+.dark * {
+  scrollbar-color: #4b5563 #111827; /* thumb, track */
+}
+
+.dark *::-webkit-scrollbar-track {
+  background: #111827; /* gray-900 */
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: #4b5563; /* gray-600 */
+  border-radius: 9999px;
+  border: 2px solid #111827;
+}
+

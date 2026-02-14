@@ -4,6 +4,7 @@ import { Subject as RxSubject, Subscription, debounceTime, distinctUntilChanged 
 import { SubjectModel, SubjectService } from './subject.service';
 import { AddEditSubjectModalComponent } from '../../shared/add-edit-subject-modal/add-edit-subject-modal.component';
 import { DeleteConfirmModalComponent } from '../../shared/delete-confirm-modal/delete-confirm-modal.component';
+import { CommonFunctionService } from '../../core/common/common-function.service';
 
 @Component({
   selector: 'app-subject',
@@ -31,6 +32,7 @@ export class SubjectComponent implements OnInit, OnDestroy {
   constructor(
     private subjectService: SubjectService,
     private dialog: MatDialog,
+    private commonFn: CommonFunctionService,
   ) {}
 
   ngOnInit(): void {
@@ -63,6 +65,10 @@ export class SubjectComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading = false;
+        this.commonFn.showToast(
+          'Failed to load subjects. Please try again.',
+          'error',
+        );
       },
     });
   }
@@ -116,8 +122,16 @@ export class SubjectComponent implements OnInit, OnDestroy {
       if (!result) {
         return;
       }
-      this.subjectService.delete(subject._id as string).subscribe(() => {
-        this.load();
+      this.subjectService.delete(subject._id as string).subscribe({
+        next: () => {
+          this.load();
+          this.commonFn.showToast('Subject deleted successfully.', 'success');
+        },
+        error: (err) => {
+          const msg =
+            err?.error?.message || 'Failed to delete subject. Please try again.';
+          this.commonFn.showToast(msg, 'error');
+        },
       });
     });
   }

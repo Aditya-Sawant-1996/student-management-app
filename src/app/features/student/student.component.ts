@@ -4,6 +4,7 @@ import { Student, StudentService } from './student.service';
 import { AddEditStudentModalComponent } from '../../shared/add-edit-student-modal/add-edit-student-modal.component';
 import { DeleteConfirmModalComponent } from '../../shared/delete-confirm-modal/delete-confirm-modal.component';
 import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
+import { CommonFunctionService } from '../../core/common/common-function.service';
 
 @Component({
   selector: 'app-student',
@@ -23,14 +24,18 @@ export class StudentComponent implements OnInit, OnDestroy {
   tableHeaders = [
     { field: 'displayName', label: 'Name' },
     { field: 'mobileNo', label: 'Mobile' },
-    { field: 'displaySubjects', label: 'Subjects', tooltipField: 'subjectsTooltip' },
+		{ field: 'displaySubjects', label: 'Subjects', tooltipField: 'subjectsTooltip' },
+		{ field: 'totalFees', label: 'Total Fees' },
+		{ field: 'totalFeesPaid', label: 'Fees Paid' },
+		{ field: 'pendingFees', label: 'Pending Fees' },
   ];
 
-  searchPlaceholder = 'Search by name, mobile or aadhaar number...';
+  searchPlaceholder = 'Search by name, mobile...';
 
   constructor(
     private studentService: StudentService,
     private dialog: MatDialog,
+    private commonFn: CommonFunctionService,
   ) {}
 
   ngOnInit(): void {
@@ -68,6 +73,10 @@ export class StudentComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading = false;
+        this.commonFn.showToast(
+          'Failed to load students. Please try again.',
+          'error',
+        );
       },
     });
   }
@@ -159,8 +168,16 @@ export class StudentComponent implements OnInit, OnDestroy {
       if (!result) {
         return;
       }
-      this.studentService.delete(student._id as string).subscribe(() => {
-        this.load();
+      this.studentService.delete(student._id as string).subscribe({
+        next: () => {
+          this.load();
+          this.commonFn.showToast('Student deleted successfully.', 'success');
+        },
+        error: (err) => {
+          const msg =
+            err?.error?.message || 'Failed to delete student. Please try again.';
+          this.commonFn.showToast(msg, 'error');
+        },
       });
     });
   }

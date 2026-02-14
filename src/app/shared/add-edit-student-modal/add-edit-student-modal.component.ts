@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SelectedSubject, Student, StudentService } from '../../features/student/student.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SubjectModel, SubjectService } from '../../features/subject/subject.service';
+import { CommonFunctionService } from '../../core/common/common-function.service';
 
 @Component({
   selector: 'app-add-edit-student-modal',
@@ -33,6 +34,7 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
 
   subjects: SubjectModel[] = [];
   subjectSearch = '';
+  readonly today = new Date();
 
   get isEdit(): boolean {
     return !!(this.student && this.student._id);
@@ -42,6 +44,7 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private studentService: StudentService,
     private subjectService: SubjectService,
+    private commonFn: CommonFunctionService,
     @Inject(MAT_DIALOG_DATA) public data: { student: Student | null },
     private dialogRef: MatDialogRef<AddEditStudentModalComponent>
   ) {
@@ -136,11 +139,6 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (!this.isEdit && !this.selectedPhoto) {
-      this.photoError = 'Photo is required.';
-      return;
-    }
-
     const formValue = this.form.value;
 
 		const selectedSubjectIds: string[] = Array.isArray(formValue.subject)
@@ -195,9 +193,13 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
           this.submitted = false;
           this.form.reset();
           this.dialogRef.close(true);
+          this.commonFn.showToast('Student updated successfully.', 'success');
         },
-        error: () => {
+        error: (err) => {
           this.loading = false;
+          const msg =
+            err?.error?.message || 'Failed to update student. Please try again.';
+          this.commonFn.showToast(msg, 'error');
         },
       });
     } else {
@@ -207,9 +209,13 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
           this.submitted = false;
           this.form.reset();
           this.dialogRef.close(true);
+          this.commonFn.showToast('Student created successfully.', 'success');
         },
-        error: () => {
+        error: (err) => {
           this.loading = false;
+          const msg =
+            err?.error?.message || 'Failed to create student. Please try again.';
+          this.commonFn.showToast(msg, 'error');
         },
       });
     }
@@ -290,6 +296,10 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.subjects = [];
+        this.commonFn.showToast(
+          'Failed to load subjects. Please try again.',
+          'error',
+        );
       },
     });
   }

@@ -1,9 +1,10 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject, Subscription, debounceTime, distinctUntilChanged } from 'rxjs';
-import { FeesModel, FeesService } from './fees.service';
+import { FeesModel, FeesService, FeesSummaryItem } from './fees.service';
 import { AddEditFeesModalComponent } from '../../shared/add-edit-fees-modal/add-edit-fees-modal.component';
 import { DeleteConfirmModalComponent } from '../../shared/delete-confirm-modal/delete-confirm-modal.component';
+import { CommonFunctionService } from '../../core/common/common-function.service';
 
 @Component({
   selector: 'app-fees',
@@ -22,18 +23,19 @@ export class FeesComponent implements OnInit, OnDestroy {
 
   tableHeaders = [
     { field: 'studentName', label: 'Student' },
-    { field: 'aadhaarNumber', label: 'Aadhaar' },
-    { field: 'subjects', label: 'Subjects' },
+    { field: 'admissionDateFormatted', label: 'Admission Date' },
+    { field: 'mobileNo', label: 'Mobile Number' },
     { field: 'totalFees', label: 'Total Fees' },
     { field: 'feesPaid', label: 'Fees Paid' },
-    { field: 'date', label: 'Date' },
+    { field: 'dateFormatted', label: 'Date' },
   ];
 
-  searchPlaceholder = 'Search by student name or Aadhaar...';
+  searchPlaceholder = 'Search by student name or mobile...';
 
   constructor(
     private feesService: FeesService,
     private dialog: MatDialog,
+    private commonFn: CommonFunctionService,
   ) {}
 
   ngOnInit(): void {
@@ -61,7 +63,12 @@ export class FeesComponent implements OnInit, OnDestroy {
             ...f,
             // flatten for table
             studentName: f.selectedStudent?.name,
-            aadhaarNumber: f.selectedStudent?.aadhaarNumber,
+				// support both new mobileNo and any legacy mobileNumber
+				mobileNo:
+					f.selectedStudent?.mobileNo ||
+					(f.selectedStudent as any)?.mobileNumber,
+            admissionDateFormatted: this.formatDate(f.admissionDate),
+            dateFormatted: this.formatDate(f.date),
           })) as any;
           this.total = res.total;
           this.page = res.page;
@@ -71,8 +78,26 @@ export class FeesComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.loading = false;
+        this.commonFn.showToast(
+          'Failed to load fees records. Please try again.',
+          'error',
+        );
       },
     });
+  }
+
+  private formatDate(value: any): string {
+    if (!value) {
+      return '';
+    }
+    const d = new Date(value);
+    if (isNaN(d.getTime())) {
+      return '';
+    }
+    const day = String(d.getDate()).padStart(2, '0');
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const year = d.getFullYear();
+    return `${day}/${month}/${year}`;
   }
 
   onSearchChange(value: string): void {
@@ -124,8 +149,17 @@ export class FeesComponent implements OnInit, OnDestroy {
       if (!result) {
         return;
       }
-      this.feesService.delete(fees._id as string).subscribe(() => {
-        this.load();
+      this.feesService.delete(fees._id as string).subscribe({
+        next: () => {
+          this.commonFn.showToast('Fees record deleted successfully.', 'success');
+          this.load();
+        },
+        error: () => {
+          this.commonFn.showToast(
+            'Failed to delete fees record. Please try again.',
+            'error',
+          );
+        },
       });
     });
   }
@@ -155,5 +189,122 @@ export class FeesComponent implements OnInit, OnDestroy {
     this.limit = limit;
     this.page = 1;
     this.load();
+  }
+
+  onExportExcel(): void {
+    this.feesService.getSummaryByStudent().subscribe({
+      next: async (res) => {
+        if (!res.success || !res.data?.length) {
+				this.commonFn.showToast('No data to export.', 'error');
+          return;
+        }
+        const rows = this.buildExportRows(res.data);
+        try {
+          const xlsx = await import('xlsx');
+          const ws = xlsx.utils.json_to_sheet(rows);
+        // Override header row with user-friendly labels
+        const headerLabels = [
+          'Student Name',
+          'Subjects',
+          'Total Installments',
+          'Total Fee',
+          'Monthly Installment',
+          'Paid Fees',
+          'Amount Due',
+          'Last Paid Date',
+        ];
+        if (ws['!ref']) {
+          const range = xlsx.utils.decode_range(ws['!ref']);
+          for (let c = 0; c < headerLabels.length; c++) {
+            const cellRef = xlsx.utils.encode_cell({ r: range.s.r, c });
+            if (!ws[cellRef]) {
+              ws[cellRef] = { t: 's', v: headerLabels[c] } as any;
+            } else {
+              (ws[cellRef] as any).v = headerLabels[c];
+              (ws[cellRef] as any).t = 's';
+            }
+          }
+        }
+          const wb = xlsx.utils.book_new();
+          xlsx.utils.book_append_sheet(wb, ws, 'Fees Summary');
+          xlsx.writeFile(wb, 'fees-summary.xlsx');
+        } catch {
+          this.commonFn.showToast(
+            'Failed to export Excel. Please ensure dependencies are installed.',
+            'error',
+          );
+        }
+      },
+      error: () => {
+        this.commonFn.showToast(
+          'Failed to fetch data for export.',
+          'error',
+        );
+      },
+    });
+  }
+
+  onExportPdf(): void {
+    this.feesService.getSummaryByStudent().subscribe({
+      next: async (res) => {
+        if (!res.success || !res.data?.length) {
+				this.commonFn.showToast('No data to export.', 'error');
+          return;
+        }
+        const rows = this.buildExportRows(res.data);
+        try {
+          const jsPDFModule: any = await import('jspdf');
+          await import('jspdf-autotable');
+          const JsPDF = jsPDFModule.default || jsPDFModule.jsPDF || jsPDFModule;
+          const doc = new JsPDF('l', 'pt', 'a4');
+          const head = [[
+            'Student Name',
+            'Subjects',
+            'Total Installments',
+            'Total Fee',
+            'Monthly Installment',
+            'Paid Fees',
+            'Amount Due',
+            'Last Paid Date',
+          ]];
+          const body = rows.map((r) => [
+            r.studentName,
+            r.subjects,
+            r.totalInstallments,
+            r.totalFee,
+            r.monthlyInstallment,
+            r.paidFees,
+            r.amountDue,
+            r.lastPaidFeesDate,
+          ]);
+          (doc as any).autoTable({ head, body, startY: 30, styles: { fontSize: 8 } });
+          doc.save('fees-summary.pdf');
+        } catch {
+          this.commonFn.showToast(
+            'Failed to export PDF. Please ensure dependencies are installed.',
+            'error',
+          );
+        }
+      },
+      error: () => {
+        this.commonFn.showToast(
+          'Failed to fetch data for export.',
+          'error',
+        );
+      },
+    });
+  }
+
+  private buildExportRows(items: FeesSummaryItem[]): any[] {
+    return items.map((item) => ({
+      studentName: item.name,
+      subjects: (item.subjects || []).join(', '),
+      totalInstallments: item.totalInstallments,
+      totalFee: item.totalFees,
+      monthlyInstallment: item.monthlyInstallments,
+      paidFees: item.totalPaid,
+      amountDue: item.amountDue,
+      lastPaidFeesDate: this.formatDate(item.lastPaymentDate),
+    }));
   }
 }

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 export interface FeesSelectedStudent {
   studentId: string;
   name: string;
-  aadhaarNumber: string;
+  mobileNo: string;
   subjects: string[];
 }
 
@@ -17,7 +17,7 @@ export interface FeesModel {
   totalFees: number;
   totalInstallments: number;
   monthlyInstallments: number;
-  instalmentNumber: string;
+  instalmentNumber: number;
   feesPaid: number;
   date: string; // ISO
 }
@@ -28,6 +28,28 @@ export interface FeesListResponse {
   total: number;
   page: number;
   limit: number;
+}
+
+export interface FeesSingleResponse {
+  success: boolean;
+  fees: FeesModel | null;
+}
+
+export interface FeesSummaryItem {
+  studentId: string;
+  name: string;
+  subjects: string[];
+  totalInstallments: number;
+  totalFees: number;
+  monthlyInstallments: number;
+  totalPaid: number;
+  amountDue: number;
+  lastPaymentDate: string;
+}
+
+export interface FeesSummaryResponse {
+  success: boolean;
+  data: FeesSummaryItem[];
 }
 
 @Injectable({
@@ -57,4 +79,16 @@ export class FeesService {
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
+
+  getLastForStudent(studentId: string): Observable<FeesSingleResponse> {
+    return this.http.get<FeesSingleResponse>(
+      `${this.baseUrl}/by-student/${studentId}/last`,
+    );
+  }
+
+	getSummaryByStudent(): Observable<FeesSummaryResponse> {
+		return this.http.get<FeesSummaryResponse>(
+			`${this.baseUrl}/summary/by-student`,
+		);
+	}
 }

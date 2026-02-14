@@ -1,23 +1,81 @@
-<section class="bg-white dark:bg-gray-800 rounded shadow p-4 flex flex-col gap-4">
-	<!-- Search and Add button row -->
-	<div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
-		<input
-			type="text"
-			[placeholder]="searchPlaceholder"
-			class="flex-1 rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-			(input)="onSearch($any($event.target).value)"
-		/>
-		<button
-			type="button"
-			(click)="onAdd()"
-			class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium self-end sm:self-auto"
+<section class="bg-white dark:bg-gray-800 rounded shadow p-4 flex flex-col gap-4 list-container">
+	<!-- Header row: search, pagination, page size and Add button in one line -->
+	<div class="flex flex-wrap items-center gap-3 justify-between list-header">
+		<div class="flex items-center gap-2">
+			<input
+				type="text"
+				[placeholder]="searchPlaceholder"
+				class="search-input rounded border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+				(input)="onSearch($any($event.target).value)"
+			/>
+		</div>
+
+		<div
+			class="flex items-center space-x-2 text-xs text-gray-600 dark:text-gray-300 pagination-inline"
+			*ngIf="total > 0"
 		>
-			{{ addButtonLabel }}
-		</button>
+			<div>
+				Page {{ page }} of {{ totalPages }} ({{ total }} {{ moduleLabel }})
+			</div>
+			<div class="flex items-center space-x-2">
+				<span>Show</span>
+				<mat-form-field appearance="outline" class="w-20 text-xs page-size-field">
+					<mat-select [value]="limit" (selectionChange)="onLimitChange($event.value)">
+						<mat-option *ngFor="let opt of limitOptions" [value]="opt">
+							{{ opt }}
+						</mat-option>
+					</mat-select>
+				</mat-form-field>
+				<span>per page</span>
+				<button
+					type="button"
+					(click)="onPrevPage()"
+					class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+					[disabled]="page <= 1"
+				>
+					Previous
+				</button>
+				<button
+					type="button"
+					(click)="onNextPage()"
+					class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+					[disabled]="page >= totalPages"
+				>
+					Next
+				</button>
+			</div>
+		</div>
+
+		<div class="flex items-center gap-2">
+			<button
+				type="button"
+				*ngIf="showExport"
+				[matMenuTriggerFor]="exportMenu"
+				class="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 text-sm font-medium text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-1"
+			>
+				<!-- <mat-icon fontIcon="download"></mat-icon> -->
+				<span>Export</span>
+			</button>
+			<mat-menu #exportMenu="matMenu">
+				<button mat-menu-item (click)="onExportPdf()">
+					<span>Export to PDF</span>
+				</button>
+				<button mat-menu-item (click)="onExportExcel()">
+					<span>Export to Excel</span>
+				</button>
+			</mat-menu>
+			<button
+				type="button"
+				(click)="onAdd()"
+				class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium"
+			>
+				{{ addButtonLabel }}
+			</button>
+		</div>
 	</div>
 
-	<!-- Table -->
-	<div class="overflow-x-auto">
+	<!-- Table (scrollable area within viewport height) -->
+	<div class="overflow-x-auto list-table-wrapper">
 		<table class="min-w-full text-sm">
 			<thead>
 				<tr class="bg-gray-100 dark:bg-gray-900 text-gray-700 dark:text-gray-200">
@@ -95,40 +153,4 @@
 		</tr>
 	</ng-template>
 
-	<!-- Pagination & page size -->
-	<div
-		class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-300 mt-2"
-		*ngIf="total > 0"
-	>
-		<div>
-			Page {{ page }} of {{ totalPages }} ({{ total }} {{ moduleLabel }})
-		</div>
-		<div class="flex items-center space-x-2">
-			<span>Show</span>
-			<mat-form-field appearance="outline" class="w-24 text-xs page-size-field">
-				<mat-select [value]="limit" (selectionChange)="onLimitChange($event.value)">
-					<mat-option *ngFor="let opt of limitOptions" [value]="opt">
-						{{ opt }}
-					</mat-option>
-				</mat-select>
-			</mat-form-field>
-			<span>per page</span>
-			<button
-				type="button"
-				(click)="onPrevPage()"
-				class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-				[disabled]="page <= 1"
-			>
-				Previous
-			</button>
-			<button
-				type="button"
-				(click)="onNextPage()"
-				class="px-3 py-1 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-				[disabled]="page >= totalPages"
-			>
-				Next
-			</button>
-		</div>
-	</div>
 </section>

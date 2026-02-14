@@ -4,6 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { Subject, Subscription, debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { FeesModel, FeesService } from '../../features/fees/fees.service';
 import { Student, StudentService } from '../../features/student/student.service';
+import { CommonFunctionService } from '../../core/common/common-function.service';
 
 @Component({
   selector: 'app-add-edit-fees-modal',
@@ -16,6 +17,7 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
   form: FormGroup;
   submitted = false;
   loading = false;
+  readonly today = new Date();
 
   students: Student[] = [];
   studentSearchControl = new FormControl('');
@@ -30,6 +32,7 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private feesService: FeesService,
     private studentService: StudentService,
+    private commonFn: CommonFunctionService,
     @Inject(MAT_DIALOG_DATA) public data: { fees: FeesModel | null },
     private dialogRef: MatDialogRef<AddEditFeesModalComponent>,
   ) {
@@ -42,7 +45,7 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
       totalFees: ['', [Validators.required]],
       totalInstallments: [null, [Validators.required, Validators.min(1)]],
       monthlyInstallments: [{ value: '', disabled: true }],
-      instalmentNumber: ['', [Validators.required]],
+      instalmentNumber: [null, [Validators.required, Validators.min(1)]],
       feesPaid: ['', [Validators.required]],
       date: [new Date(), [Validators.required]],
     });
@@ -57,12 +60,25 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
         distinctUntilChanged(),
         switchMap((term) => this.studentService.list(1, 20, term)),
       )
-      .subscribe((res) => {
-        if (res.success) {
-          this.students = res.data;
-        } else {
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            this.students = res.data;
+          } else {
+            this.students = [];
+            this.commonFn.showToast(
+              'Failed to load students for fees. Please try again.',
+              'error',
+            );
+          }
+        },
+        error: () => {
           this.students = [];
-        }
+          this.commonFn.showToast(
+            'Failed to load students for fees. Please try again.',
+            'error',
+          );
+        },
       });
 
     this.studentSearchControl.valueChanges.subscribe((value) => {
@@ -110,10 +126,51 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
   }
 
   onStudentSelected(student: Student): void {
+    if (!student._id) {
+      return;
+    }
     this.form.patchValue({
       selectedStudentId: student._id,
-      subjects: (student as any).selectedSubjects?.map((s: any) => s.name) ||
+      subjects:
+        (student as any).selectedSubjects?.map((s: any) => s.name) ||
         student.subject || [],
+    });
+
+    // Prefill fees fields from the last fees record for this student, if any
+    this.feesService.getLastForStudent(student._id).subscribe({
+      next: (res) => {
+        if (!res.success || !res.fees) {
+          return;
+        }
+        const last = res.fees;
+        const nextInstalmentNumber =
+          (last.instalmentNumber ?? 0) + 1;
+        this.form.patchValue({
+          admissionDate: last.admissionDate
+            ? new Date(last.admissionDate)
+            : null,
+          totalFees: this.formatAmount(last.totalFees),
+          totalInstallments: last.totalInstallments,
+          monthlyInstallments: this.formatAmount(last.monthlyInstallments),
+          instalmentNumber: nextInstalmentNumber,
+          feesPaid: this.formatAmount(last.feesPaid),
+          subjects: last.subjects && last.subjects.length
+            ? last.subjects
+            : this.form.get('subjects')?.value,
+          // date is intentionally NOT patched so it stays as current date
+        });
+
+        this.commonFn.showToast(
+          `Previous fees data loaded. Installment number set to ${nextInstalmentNumber}.`,
+          'success',
+        );
+      },
+      error: () => {
+        this.commonFn.showToast(
+          'Failed to load previous fees data. Please fill manually.',
+          'error',
+        );
+      },
     });
   }
 
@@ -159,9 +216,13 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
           this.submitted = false;
           this.form.reset();
           this.dialogRef.close(true);
+          this.commonFn.showToast('Fees updated successfully.', 'success');
         },
-        error: () => {
+        error: (err) => {
           this.loading = false;
+          const msg =
+            err?.error?.message || 'Failed to update fees. Please try again.';
+          this.commonFn.showToast(msg, 'error');
         },
       });
     } else {
@@ -171,9 +232,13 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
           this.submitted = false;
           this.form.reset();
           this.dialogRef.close(true);
+          this.commonFn.showToast('Fees created successfully.', 'success');
         },
-        error: () => {
+        error: (err) => {
           this.loading = false;
+          const msg =
+            err?.error?.message || 'Failed to create fees. Please try again.';
+          this.commonFn.showToast(msg, 'error');
         },
       });
     }

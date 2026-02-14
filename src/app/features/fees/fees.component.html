@@ -3,7 +3,6 @@
     [tableHeaders]="tableHeaders"
     [tableData]="fees"
     [searchPlaceholder]="searchPlaceholder"
-    [addButtonLabel]="'Add Fees'"
     [moduleLabel]="'fees records'"
     [loading]="loading"
     [page]="page"
@@ -11,6 +10,8 @@
     [total]="total"
     [limit]="limit"
     [limitOptions]="pageSizeOptions"
+    [showExport]="true"
+    [showViewAction]="false"
     (addClicked)="openAddModal()"
     (editClicked)="openEditModal($event)"
     (deleteClicked)="onDelete($event)"
@@ -18,5 +19,7 @@
     (prevPageClicked)="prevPage()"
     (nextPageClicked)="nextPage()"
     (limitChange)="onLimitChange($event)"
+		(exportPdfClicked)="onExportPdf()"
+		(exportExcelClicked)="onExportExcel()"
   ></app-list>
 </section>

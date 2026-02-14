@@ -3,7 +3,7 @@
     class="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700"
   >
     <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-      {{ isEdit ? 'Edit Fees' : 'Add Fees' }}
+      {{ isEdit ? "Edit Fees" : "Add Fees" }}
     </h3>
     <button
       type="button"
@@ -25,24 +25,39 @@
             >*</span
           >
         </label>
-        <mat-form-field appearance="outline" class="w-full text-sm">
-          <input
-            type="text"
-            matInput
-            placeholder="Search by name, Aadhaar or mobile"
-            [matAutocomplete]="studentAuto"
-            [formControl]="studentSearchControl"
-          />
-          <mat-autocomplete
-            #studentAuto="matAutocomplete"
-            [displayWith]="displayStudent.bind(this)"
-            (optionSelected)="onStudentSelected($event.option.value)"
-          >
-            <mat-option *ngFor="let s of students" [value]="s">
-              {{ s.name }} ({{ s.aadhaarNumber }}) - {{ s.mobileNo }}
-            </mat-option>
-          </mat-autocomplete>
-        </mat-form-field>
+        <!-- Add mode: searchable autocomplete -->
+        <ng-container *ngIf="!isEdit; else viewStudentTpl">
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input
+              type="text"
+              matInput
+              placeholder="Search by name, Aadhaar or mobile"
+              [matAutocomplete]="studentAuto"
+              [formControl]="studentSearchControl"
+            />
+            <mat-autocomplete
+              #studentAuto="matAutocomplete"
+              [displayWith]="displayStudent.bind(this)"
+              (optionSelected)="onStudentSelected($event.option.value)"
+            >
+              <mat-option *ngFor="let s of students" [value]="s">
+                {{ s?.name }} ({{ s?.aadhaarNumber || "N/A" }}) -
+                {{ s?.mobileNo || "N/A" }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </ng-container>
+
+        <!-- Edit mode: read-only selected student display -->
+        <ng-template #viewStudentTpl>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input
+              matInput
+              [value]="studentSearchControl.value"
+              disabled
+            />
+          </mat-form-field>
+        </ng-template>
         <p
           class="mt-1 text-xs text-red-500"
           *ngIf="
@@ -63,7 +78,9 @@
             >*</span
           >
         </label>
-        <div class="min-h-[42px] flex flex-wrap gap-1 items-center border border-gray-300 dark:border-gray-700 rounded px-2 py-1">
+        <div
+          class="min-h-[42px] flex flex-wrap gap-1 items-center border border-gray-300 dark:border-gray-700 rounded px-2 py-1"
+        >
           <ng-container *ngIf="subjectsList.length; else noSubjectsTpl">
             <mat-chip-listbox aria-label="Subjects">
               <mat-chip *ngFor="let subj of subjectsList" selected>
@@ -100,7 +117,12 @@
             >
           </label>
           <mat-form-field appearance="outline" class="w-full text-sm">
-            <input matInput [matDatepicker]="admissionDp" formControlName="admissionDate" />
+            <input
+              matInput
+              [matDatepicker]="admissionDp"
+              [max]="today"
+              formControlName="admissionDate"
+            />
             <mat-datepicker-toggle
               matSuffix
               [for]="admissionDp"
@@ -126,8 +148,16 @@
             >
           </label>
           <mat-form-field appearance="outline" class="w-full text-sm">
-            <input matInput [matDatepicker]="dateDp" formControlName="date" />
-            <mat-datepicker-toggle matSuffix [for]="dateDp"></mat-datepicker-toggle>
+            <input
+              matInput
+              [matDatepicker]="dateDp"
+              [max]="today"
+              formControlName="date"
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="dateDp"
+            ></mat-datepicker-toggle>
             <mat-datepicker #dateDp></mat-datepicker>
           </mat-form-field>
           <p
@@ -153,7 +183,11 @@
             >
           </label>
           <mat-form-field appearance="outline" class="w-full text-sm">
-				<input matInput formControlName="totalFees" (blur)="onAmountBlur('totalFees')" />
+            <input
+              matInput
+              formControlName="totalFees"
+              (blur)="onAmountBlur('totalFees')"
+            />
           </mat-form-field>
           <p
             class="mt-1 text-xs text-red-500"
@@ -194,7 +228,11 @@
             Monthly Installments
           </label>
           <mat-form-field appearance="outline" class="w-full text-sm">
-            <input matInput formControlName="monthlyInstallments" [disabled]="true" />
+            <input
+              matInput
+              formControlName="monthlyInstallments"
+              [disabled]="true"
+            />
           </mat-form-field>
         </div>
       </div>
@@ -211,7 +249,12 @@
             >
           </label>
           <mat-form-field appearance="outline" class="w-full text-sm">
-            <input matInput formControlName="instalmentNumber" />
+            <input
+              matInput
+              type="number"
+              formControlName="instalmentNumber"
+              min="1"
+            />
           </mat-form-field>
           <p
             class="mt-1 text-xs text-red-500"
@@ -220,7 +263,7 @@
               (form.get('instalmentNumber')?.touched || submitted)
             "
           >
-            Installment number is required.
+            Installment number is required and must be at least 1.
           </p>
         </div>
         <div>
@@ -232,7 +275,11 @@
             >
           </label>
           <mat-form-field appearance="outline" class="w-full text-sm">
-				<input matInput formControlName="feesPaid" (blur)="onAmountBlur('feesPaid')" />
+            <input
+              matInput
+              formControlName="feesPaid"
+              (blur)="onAmountBlur('feesPaid')"
+            />
           </mat-form-field>
           <p
             class="mt-1 text-xs text-red-500"
@@ -260,9 +307,21 @@
       <button
         type="submit"
         [disabled]="loading || form.invalid"
-        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50"
+        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {{ isEdit ? 'Update' : 'Save' }}
+        <ng-container *ngIf="!loading; else savingTpl">
+          {{ isEdit ? "Update" : "Save" }}
+        </ng-container>
+        <ng-template #savingTpl>
+          <span class="flex items-center justify-center gap-2">
+            <mat-progress-spinner
+              diameter="18"
+              strokeWidth="3"
+              mode="indeterminate"
+            ></mat-progress-spinner>
+            <span>Saving...</span>
+          </span>
+        </ng-template>
       </button>
     </div>
   </form>

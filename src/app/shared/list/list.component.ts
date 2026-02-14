@@ -10,7 +10,7 @@ export class ListComponent {
   @Input() tableHeaders: { field: string; label: string; tooltipField?: string }[] = [];
   @Input() tableData: any[] = [];
   @Input() searchPlaceholder = 'Search...';
-  @Input() addButtonLabel = 'Add';
+  @Input() addButtonLabel = 'Add New';
   @Input() showEditAction = true;
   @Input() showDeleteAction = true;
   @Input() showViewAction = true;
@@ -21,6 +21,10 @@ export class ListComponent {
   @Input() limit = 10;
   @Input() limitOptions: number[] = [10, 20, 30, 100];
   @Input() moduleLabel = 'items';
+	@Input() showExport = false;
+
+	@Output() exportPdfClicked = new EventEmitter<void>();
+	@Output() exportExcelClicked = new EventEmitter<void>();
 
   @Output() addClicked = new EventEmitter<void>();
   @Output() editClicked = new EventEmitter<any>();
@@ -37,6 +41,14 @@ export class ListComponent {
 
   onAdd(): void {
     this.addClicked.emit();
+  }
+
+  onExportPdf(): void {
+    this.exportPdfClicked.emit();
+  }
+
+  onExportExcel(): void {
+    this.exportExcelClicked.emit();
   }
 
   onEdit(row: any): void {

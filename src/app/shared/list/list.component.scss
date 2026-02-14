@@ -1,1 +1,39 @@
+/* Constrain list height to viewport and make table area scrollable */
+
+:host {
+	display: block;
+	/* Leave some space for header/nav etc.; adjust if needed */
+	max-height: calc(100vh - 120px);
+}
+
+.list-container {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	height: 100%;
+}
+
+.list-header {
+	/* Keep everything in one line when there is space, but allow wrap on very small screens */
+	flex-wrap: wrap;
+}
+
+.search-input {
+	/* Make search smaller so header items fit in one row */
+	width: 220px;
+	max-width: 100%;
+}
+
+.list-table-wrapper {
+	/* Take remaining space below the search/add row inside the card */
+	max-height: calc(100vh - 220px);
+	overflow-y: auto;
+}
+
+/* Ensure inner table does not force extra vertical growth */
+.list-table-wrapper table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
 

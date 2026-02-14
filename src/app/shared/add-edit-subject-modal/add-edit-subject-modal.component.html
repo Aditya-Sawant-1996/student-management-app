@@ -56,9 +56,21 @@
       <button
         type="submit"
         [disabled]="loading || form.invalid"
-        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50"
+        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {{ isEdit ? "Update" : "Save" }}
+        <ng-container *ngIf="!loading; else savingTpl">
+          {{ isEdit ? "Update" : "Save" }}
+        </ng-container>
+        <ng-template #savingTpl>
+          <span class="flex items-center justify-center gap-2">
+            <mat-progress-spinner
+              diameter="18"
+              strokeWidth="3"
+              mode="indeterminate"
+            ></mat-progress-spinner>
+            <span>Saving...</span>
+          </span>
+        </ng-template>
       </button>
     </div>
   </form>

@@ -2,6 +2,7 @@ import { Component, Inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SubjectModel, SubjectService } from '../../features/subject/subject.service';
+import { CommonFunctionService } from '../../core/common/common-function.service';
 
 @Component({
   selector: 'app-add-edit-subject-modal',
@@ -22,6 +23,7 @@ export class AddEditSubjectModalComponent {
   constructor(
     private fb: FormBuilder,
     private subjectService: SubjectService,
+    private commonFn: CommonFunctionService,
     @Inject(MAT_DIALOG_DATA) public data: { subject: SubjectModel | null },
     private dialogRef: MatDialogRef<AddEditSubjectModalComponent>
   ) {
@@ -53,10 +55,14 @@ export class AddEditSubjectModalComponent {
           this.loading = false;
           this.submitted = false;
           this.dialogRef.close(true);
+          this.commonFn.showToast('Subject updated successfully.', 'success');
         },
         error: (err) => {
           this.loading = false;
-          this.errorMessage = err?.error?.message || 'Failed to update subject.';
+          const msg =
+            err?.error?.message || 'Failed to update subject. Please try again.';
+          this.errorMessage = msg;
+          this.commonFn.showToast(msg, 'error');
         },
       });
     } else {
@@ -65,10 +71,14 @@ export class AddEditSubjectModalComponent {
           this.loading = false;
           this.submitted = false;
           this.dialogRef.close(true);
+          this.commonFn.showToast('Subject created successfully.', 'success');
         },
         error: (err) => {
           this.loading = false;
-          this.errorMessage = err?.error?.message || 'Failed to create subject.';
+          const msg =
+            err?.error?.message || 'Failed to create subject. Please try again.';
+          this.errorMessage = msg;
+          this.commonFn.showToast(msg, 'error');
         },
       });
     }
