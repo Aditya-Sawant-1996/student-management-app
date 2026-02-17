@@ -24,6 +24,9 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
   private studentSearch$ = new Subject<string>();
   private studentSearchSub?: Subscription;
 
+  selectedStudentBatchStart: string | null = null;
+  selectedStudentBatchEnd: string | null = null;
+
   get isEdit(): boolean {
     return !!(this.fees && this.fees._id);
   }
@@ -105,6 +108,23 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
       if (this.fees.selectedStudent?.name) {
         this.studentSearchControl.setValue(this.fees.selectedStudent.name);
       }
+
+      // Load batch start/end for the selected student so we can show it in edit mode
+      const studentId = this.fees.selectedStudent?.studentId;
+      if (studentId) {
+        this.studentService.getById(studentId).subscribe({
+          next: (res) => {
+            if (!res.success || !res.student) {
+              return;
+            }
+            this.selectedStudentBatchStart = res.student.batchStart ?? null;
+            this.selectedStudentBatchEnd = res.student.batchEnd ?? null;
+          },
+          error: () => {
+            // Ignore errors; batch info is optional UI.
+          },
+        });
+      }
     }
 
     this.form.get('totalFees')?.valueChanges.subscribe(() => {
@@ -129,17 +149,43 @@ export class AddEditFeesModalComponent implements OnInit, OnDestroy {
     if (!student._id) {
       return;
     }
+
+    const selectedStudentId = student._id;
+    this.selectedStudentBatchStart = student.batchStart ?? null;
+    this.selectedStudentBatchEnd = student.batchEnd ?? null;
     this.form.patchValue({
-      selectedStudentId: student._id,
+      selectedStudentId,
       subjects:
         (student as any).selectedSubjects?.map((s: any) => s.name) ||
         student.subject || [],
     });
 
     // Prefill fees fields from the last fees record for this student, if any
-    this.feesService.getLastForStudent(student._id).subscribe({
+    this.feesService.getLastForStudent(selectedStudentId).subscribe({
       next: (res) => {
+        // If user changed selection while the request was in flight,
+        // ignore this response to avoid patching stale data.
+        if (this.form.get('selectedStudentId')?.value !== selectedStudentId) {
+          return;
+        }
+
         if (!res.success || !res.fees) {
+          // No previous fees for this student: clear any data that might
+          // have been prefilled from another student.
+          this.form.patchValue({
+            admissionDate: null,
+            totalFees: '',
+            totalInstallments: null,
+            monthlyInstallments: '',
+            instalmentNumber: null,
+            feesPaid: '',
+            date: new Date(),
+          });
+
+          this.commonFn.showToast(
+            'No previous fees found for this student. Please enter details.',
+            'success',
+          );
           return;
         }
         const last = res.fees;

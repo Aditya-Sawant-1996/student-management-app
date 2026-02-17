@@ -23,6 +23,7 @@ export class FeesComponent implements OnInit, OnDestroy {
 
   tableHeaders = [
     { field: 'studentName', label: 'Student' },
+    { field: 'batchRange', label: 'Batch' },
     { field: 'admissionDateFormatted', label: 'Admission Date' },
     { field: 'mobileNo', label: 'Mobile Number' },
     { field: 'totalFees', label: 'Total Fees' },
@@ -67,6 +68,10 @@ export class FeesComponent implements OnInit, OnDestroy {
 				mobileNo:
 					f.selectedStudent?.mobileNo ||
 					(f.selectedStudent as any)?.mobileNumber,
+            batchRange: this.buildBatchRange(
+              f.selectedStudent?.batchStart,
+              f.selectedStudent?.batchEnd,
+            ),
             admissionDateFormatted: this.formatDate(f.admissionDate),
             dateFormatted: this.formatDate(f.date),
           })) as any;
@@ -205,6 +210,7 @@ export class FeesComponent implements OnInit, OnDestroy {
         // Override header row with user-friendly labels
         const headerLabels = [
           'Student Name',
+          'Batch',
           'Subjects',
           'Total Installments',
           'Total Fee',
@@ -227,7 +233,8 @@ export class FeesComponent implements OnInit, OnDestroy {
         }
           const wb = xlsx.utils.book_new();
           xlsx.utils.book_append_sheet(wb, ws, 'Fees Summary');
-          xlsx.writeFile(wb, 'fees-summary.xlsx');
+          const timestamp = this.buildExportTimestamp();
+          xlsx.writeFile(wb, `fees-summary-${timestamp}.xlsx`);
         } catch {
           this.commonFn.showToast(
             'Failed to export Excel. Please ensure dependencies are installed.',
@@ -259,6 +266,7 @@ export class FeesComponent implements OnInit, OnDestroy {
           const doc = new JsPDF('l', 'pt', 'a4');
           const head = [[
             'Student Name',
+            'Batch',
             'Subjects',
             'Total Installments',
             'Total Fee',
@@ -269,6 +277,7 @@ export class FeesComponent implements OnInit, OnDestroy {
           ]];
           const body = rows.map((r) => [
             r.studentName,
+            r.batchRange,
             r.subjects,
             r.totalInstallments,
             r.totalFee,
@@ -278,7 +287,8 @@ export class FeesComponent implements OnInit, OnDestroy {
             r.lastPaidFeesDate,
           ]);
           (doc as any).autoTable({ head, body, startY: 30, styles: { fontSize: 8 } });
-          doc.save('fees-summary.pdf');
+          const timestamp = this.buildExportTimestamp();
+          doc.save(`fees-summary-${timestamp}.pdf`);
         } catch {
           this.commonFn.showToast(
             'Failed to export PDF. Please ensure dependencies are installed.',
@@ -298,6 +308,7 @@ export class FeesComponent implements OnInit, OnDestroy {
   private buildExportRows(items: FeesSummaryItem[]): any[] {
     return items.map((item) => ({
       studentName: item.name,
+      batchRange: this.buildBatchRange(item.batchStart, item.batchEnd),
       subjects: (item.subjects || []).join(', '),
       totalInstallments: item.totalInstallments,
       totalFee: item.totalFees,
@@ -306,5 +317,40 @@ export class FeesComponent implements OnInit, OnDestroy {
       amountDue: item.amountDue,
       lastPaidFeesDate: this.formatDate(item.lastPaymentDate),
     }));
+  }
+
+  private buildExportTimestamp(): string {
+    const d = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const dd = pad(d.getDate());
+    const mm = pad(d.getMonth() + 1);
+    const yyyy = d.getFullYear();
+    let hours = d.getHours();
+    const minutes = pad(d.getMinutes());
+    const ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    if (hours === 0) {
+      hours = 12;
+    }
+    const hh = pad(hours);
+    return `${dd}-${mm}-${yyyy}-${hh}-${minutes}-${ampm}`;
+  }
+
+  private buildBatchRange(
+    start?: string,
+    end?: string,
+  ): string {
+    const startStr = start ? new Date(start) : null;
+    const endStr = end ? new Date(end) : null;
+    const fmt = (d: Date | null) =>
+      d && !isNaN(d.getTime())
+        ? d.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })
+        : '';
+    const s = fmt(startStr);
+    const e = fmt(endStr);
+    if (s && e) {
+      return `${s} - ${e}`;
+    }
+    return s || e || '';
   }
 }

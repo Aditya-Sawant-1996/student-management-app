@@ -1,5 +1,11 @@
 import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { SelectedSubject, Student, StudentService } from '../../features/student/student.service';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { SubjectModel, SubjectService } from '../../features/subject/subject.service';
@@ -64,6 +70,11 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
       address: [''],
       aadhaarNumber: ['', [Validators.pattern(aadhaarPattern)]],
       mobileNo: ['', [Validators.required, Validators.pattern(mobilePattern)]],
+      batchStart: [null, [Validators.required]],
+      batchEnd: [
+        null,
+        [Validators.required, this.batchEndAfterStartValidator.bind(this)],
+      ],
       email: ['', [Validators.email]],
       birthPlace: [''],
       dateOfBirth: [null],
@@ -72,6 +83,14 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
       latestEducation: [''],
       previousSchoolName: [''],
     });
+
+    // Revalidate batchEnd whenever batchStart changes so that
+    // the custom validator has up-to-date values.
+    this.form
+      .get('batchStart')
+      ?.valueChanges.subscribe(() => {
+        this.form.get('batchEnd')?.updateValueAndValidity({ onlySelf: true });
+      });
   }
 
   ngOnInit(): void {
@@ -88,6 +107,10 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
         address: this.student.address ?? '',
         aadhaarNumber: this.student.aadhaarNumber ?? '',
         mobileNo: this.student.mobileNo ?? '',
+        batchStart: this.student.batchStart
+          ? new Date(this.student.batchStart)
+          : null,
+        batchEnd: this.student.batchEnd ? new Date(this.student.batchEnd) : null,
         email: this.student.email ?? '',
         birthPlace: this.student.birthPlace ?? '',
         dateOfBirth: this.student.dateOfBirth
@@ -113,6 +136,8 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
         address: '',
         aadhaarNumber: '',
         mobileNo: '',
+        batchStart: null,
+        batchEnd: null,
         email: '',
         birthPlace: '',
         dateOfBirth: null,
@@ -162,9 +187,11 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
 			// handled separately below
 			return;
 		}
-      if (key === 'dateOfBirth') {
+      if (key === 'batchStart' || key === 'batchEnd' || key === 'dateOfBirth') {
         const date: Date = value instanceof Date ? value : new Date(value);
-        payload.append('dateOfBirth', date.toISOString());
+        if (!isNaN(date.getTime())) {
+          payload.append(key, date.toISOString());
+        }
         return;
       }
       payload.append(key, value);
@@ -335,6 +362,50 @@ export class AddEditStudentModalComponent implements OnInit, OnDestroy {
     return this.subjects.filter((s) =>
       s.subjectName.toLowerCase().includes(search),
     );
+  }
+
+  onBatchYearSelected(normalizedYear: Date, controlName: 'batchStart' | 'batchEnd') {
+    const ctrl = this.form.get(controlName);
+    if (!ctrl) {
+      return;
+    }
+    const current: Date = ctrl.value instanceof Date ? ctrl.value : new Date();
+    current.setFullYear(normalizedYear.getFullYear());
+    ctrl.setValue(current);
+  }
+
+  onBatchMonthSelected(
+    normalizedMonth: Date,
+    datepicker: any,
+    controlName: 'batchStart' | 'batchEnd',
+  ) {
+    const ctrl = this.form.get(controlName);
+    if (!ctrl) {
+      return;
+    }
+    const current: Date = ctrl.value instanceof Date ? ctrl.value : new Date();
+    current.setMonth(normalizedMonth.getMonth());
+    current.setDate(1);
+    ctrl.setValue(current);
+    datepicker.close();
+  }
+
+  private batchEndAfterStartValidator(
+    control: AbstractControl,
+  ): ValidationErrors | null {
+    const end = control.value as Date | null;
+    const start = control.parent?.get('batchStart')?.value as Date | null;
+    if (!start || !end) {
+      return null; // required validator handles empties
+    }
+
+    const startKey = new Date(start.getFullYear(), start.getMonth(), 1).getTime();
+    const endKey = new Date(end.getFullYear(), end.getMonth(), 1).getTime();
+
+    if (startKey > endKey) {
+      return { batchEndBeforeStart: true };
+    }
+    return null;
   }
 
 }

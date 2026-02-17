@@ -17,6 +17,8 @@ export interface Student {
   subject: string[];
   selectedSubjects?: SelectedSubject[];
   batch?: string;
+  batchStart?: string; // ISO date string from backend
+  batchEnd?: string;   // ISO date string from backend
   address: string;
   aadhaarNumber: string;
   mobileNo: string;
@@ -46,6 +48,11 @@ export interface StudentListResponse {
   limit: number;
 }
 
+export interface StudentSingleResponse {
+	success: boolean;
+	student: Student | null;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -73,4 +80,8 @@ export class StudentService {
   delete(id: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/${id}`);
   }
+
+	getById(id: string): Observable<StudentSingleResponse> {
+		return this.http.get<StudentSingleResponse>(`${this.baseUrl}/${id}`);
+	}
 }

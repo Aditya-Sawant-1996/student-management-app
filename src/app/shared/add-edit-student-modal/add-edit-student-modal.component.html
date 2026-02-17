@@ -62,25 +62,7 @@
             First name is required and must contain only letters.
           </p>
         </div>
-        <div>
-          <label
-            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
-          >
-            Mother's Name
-          </label>
-          <mat-form-field appearance="outline" class="w-full text-sm">
-            <input matInput formControlName="mothersName" />
-          </mat-form-field>
-          <p
-            class="mt-1 text-xs text-red-500"
-            *ngIf="
-              form.get('mothersName')?.invalid &&
-              (form.get('mothersName')?.touched || submitted)
-            "
-          >
-            Mother's name is required and must contain only letters.
-          </p>
-        </div>
+
         <!-- Father's / Spouse Name -->
         <div>
           <label
@@ -102,6 +84,26 @@
             "
           >
             Father's / spouse name is required and must contain only letters.
+          </p>
+        </div>
+
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Mother's Name
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input matInput formControlName="mothersName" />
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('mothersName')?.invalid &&
+              (form.get('mothersName')?.touched || submitted)
+            "
+          >
+            Mother's name is required and must contain only letters.
           </p>
         </div>
       </div>
@@ -154,6 +156,101 @@
             "
           >
             Mobile number is required and must be 10 digits.
+          </p>
+        </div>
+      </div>
+
+      <!-- Batch Start & End row -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Batch Start<span
+              class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input
+              matInput
+              [matDatepicker]="batchStartPicker"
+              formControlName="batchStart"
+              readonly
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="batchStartPicker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker
+              #batchStartPicker
+              startView="multi-year"
+              (yearSelected)="onBatchYearSelected($event, 'batchStart')"
+              (monthSelected)="
+                onBatchMonthSelected($event, batchStartPicker, 'batchStart')
+              "
+            ></mat-datepicker>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              form.get('batchStart')?.invalid &&
+              (form.get('batchStart')?.touched || submitted)
+            "
+          >
+            Batch start month and year is required.
+          </p>
+        </div>
+
+        <div>
+          <label
+            class="block text-xs font-medium text-gray-600 dark:text-gray-300 mb-1"
+          >
+            Batch End<span class="text-red-500 dark:text-red-400 font-semibold"
+              >*</span
+            >
+          </label>
+          <mat-form-field appearance="outline" class="w-full text-sm">
+            <input
+              matInput
+              [matDatepicker]="batchEndPicker"
+              formControlName="batchEnd"
+              readonly
+            />
+            <mat-datepicker-toggle
+              matSuffix
+              [for]="batchEndPicker"
+            ></mat-datepicker-toggle>
+            <mat-datepicker
+              #batchEndPicker
+              startView="multi-year"
+              (yearSelected)="onBatchYearSelected($event, 'batchEnd')"
+              (monthSelected)="
+                onBatchMonthSelected($event, batchEndPicker, 'batchEnd')
+              "
+            ></mat-datepicker>
+          </mat-form-field>
+          <p
+            class="mt-1 text-xs text-red-500"
+            *ngIf="
+              (form.get('batchEnd')?.hasError('required') &&
+                (form.get('batchEnd')?.touched || submitted)) ||
+              form.get('batchEnd')?.hasError('batchEndBeforeStart')
+            "
+          >
+            <ng-container
+              *ngIf="
+                form.get('batchEnd')?.hasError('required') &&
+                (form.get('batchEnd')?.touched || submitted)
+              "
+            >
+              Batch end month and year is required.
+            </ng-container>
+            <ng-container
+              *ngIf="form.get('batchEnd')?.hasError('batchEndBeforeStart')"
+            >
+              Batch end month and year cannot be before batch start.
+            </ng-container>
           </p>
         </div>
       </div>
@@ -445,9 +542,7 @@
         class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
         [disabled]="(form.invalid && (form.touched || submitted)) || loading"
       >
-        <ng-container *ngIf="!loading; else savingTpl">
-          Save
-        </ng-container>
+        <ng-container *ngIf="!loading; else savingTpl"> Save </ng-container>
         <ng-template #savingTpl>
           <span class="flex items-center justify-center gap-2">
             <mat-progress-spinner

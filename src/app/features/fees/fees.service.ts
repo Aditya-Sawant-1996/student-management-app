@@ -7,6 +7,8 @@ export interface FeesSelectedStudent {
   name: string;
   mobileNo: string;
   subjects: string[];
+  batchStart?: string;
+  batchEnd?: string;
 }
 
 export interface FeesModel {
@@ -39,6 +41,8 @@ export interface FeesSummaryItem {
   studentId: string;
   name: string;
   subjects: string[];
+  batchStart?: string;
+  batchEnd?: string;
   totalInstallments: number;
   totalFees: number;
   monthlyInstallments: number;
@@ -50,6 +54,17 @@ export interface FeesSummaryItem {
 export interface FeesSummaryResponse {
   success: boolean;
   data: FeesSummaryItem[];
+}
+
+export interface FeesMonthlySummaryItem {
+  year: number;
+  month: number; // 1-12
+  totalCollected: number;
+}
+
+export interface FeesMonthlySummaryResponse {
+  success: boolean;
+  data: FeesMonthlySummaryItem[];
 }
 
 @Injectable({
@@ -91,4 +106,15 @@ export class FeesService {
 			`${this.baseUrl}/summary/by-student`,
 		);
 	}
+
+  getMonthlySummary(year?: number): Observable<FeesMonthlySummaryResponse> {
+    let params = new HttpParams();
+    if (year) {
+      params = params.set('year', year);
+    }
+    return this.http.get<FeesMonthlySummaryResponse>(
+      `${this.baseUrl}/summary/monthly`,
+      { params },
+    );
+  }
 }

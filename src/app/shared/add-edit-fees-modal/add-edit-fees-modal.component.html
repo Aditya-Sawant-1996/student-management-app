@@ -67,6 +67,20 @@
         >
           Student is required.
         </p>
+
+        <!-- Selected student's batch info -->
+        <div
+          class="mt-1 text-[11px] text-gray-600 dark:text-gray-300"
+          *ngIf="selectedStudentBatchStart || selectedStudentBatchEnd"
+        >
+          <span class="font-medium">Batch:</span>
+          <span *ngIf="selectedStudentBatchStart">
+            {{ selectedStudentBatchStart | date: 'MMM yyyy' }}
+          </span>
+          <span *ngIf="selectedStudentBatchEnd">
+            - {{ selectedStudentBatchEnd | date: 'MMM yyyy' }}
+          </span>
+        </div>
       </div>
 
       <!-- Subjects (chips) -->
