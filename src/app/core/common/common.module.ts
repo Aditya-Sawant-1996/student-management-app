@@ -20,6 +20,7 @@ import { DeleteConfirmModalComponent } from '../../shared/delete-confirm-modal/d
     FormsModule,
     ReactiveFormsModule,
     RouterModule,
+    MaterialModule,
     ListComponent,
     DeleteConfirmModalComponent
   ]

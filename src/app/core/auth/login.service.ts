@@ -5,6 +5,31 @@ import { Observable } from 'rxjs';
 interface LoginResponse {
   success: boolean;
   token?: string;
+  expiresAt?: string;
+  user?: any;
+  message?: string;
+}
+
+interface SystemUserExistsResponse {
+  success: boolean;
+  exists: boolean;
+  user?: any;
+  message?: string;
+}
+
+interface CreateSystemUserResponse {
+  success: boolean;
+  user?: any;
+  message?: string;
+}
+
+interface RequestOtpResponse {
+  success: boolean;
+  message?: string;
+}
+
+interface ResetPasswordResponse {
+  success: boolean;
   user?: any;
   message?: string;
 }
@@ -17,8 +42,43 @@ export class LoginService {
 
   constructor(private http: HttpClient) {}
 
-  login(username: string, password: string): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { username, password });
+  checkSystemUserExists(): Observable<SystemUserExistsResponse> {
+    return this.http.get<SystemUserExistsResponse>(`${this.baseUrl}/system-user`);
+  }
+
+  createSystemUser(payload: {
+    name: string;
+    email: string;
+    instituteName: string;
+    password: string;
+    otp: string;
+  }): Observable<CreateSystemUserResponse> {
+    return this.http.post<CreateSystemUserResponse>(`${this.baseUrl}/system-user`, payload);
+  }
+
+  requestSystemUserOtp(payload: {
+    email: string;
+    name?: string;
+  }): Observable<RequestOtpResponse> {
+    return this.http.post<RequestOtpResponse>(`${this.baseUrl}/system-user/request-otp`, payload);
+  }
+
+  requestPasswordResetOtp(payload: {
+    email: string;
+  }): Observable<RequestOtpResponse> {
+    return this.http.post<RequestOtpResponse>(`${this.baseUrl}/system-user/reset-password/request-otp`, payload);
+  }
+
+  resetPassword(payload: {
+    email: string;
+    otp: string;
+    newPassword: string;
+  }): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(`${this.baseUrl}/system-user/reset-password`, payload);
+  }
+
+  login(email: string, password: string): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { email, password });
   }
 
   // You can add logout, token storage etc.

@@ -1,33 +1,357 @@
 <div class="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
   <div class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-    <h3 class="text-center text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100">Login</h3>
+    <div *ngIf="isChecking" class="text-center text-sm text-gray-600 dark:text-gray-300">
+      Checking user status...
+    </div>
 
-    <form [formGroup]="loginForm" (ngSubmit)="onLogin()" class="space-y-4">
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Username</label>
-        <input
-          formControlName="username"
-          class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Username"
-        />
-      </div>
-      <div>
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Password</label>
-        <input
-          type="password"
-          formControlName="password"
-          class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Password"
-        />
-      </div>
-      <div *ngIf="errorMsg" class="text-sm text-red-400">{{ errorMsg }}</div>
-      <button
-        type="submit"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-        [disabled]="loginForm.invalid"
+    <ng-container *ngIf="!isChecking">
+      <h3
+        class="text-center text-2xl font-semibold mb-6 text-gray-800 dark:text-gray-100"
       >
-        Login
-      </button>
-    </form>
+        {{ hasSystemUser ? 'Login' : 'Create User' }}
+      </h3>
+
+      <form
+        *ngIf="hasSystemUser && !isForgotMode"
+        [formGroup]="loginForm"
+        (ngSubmit)="onLogin()"
+        class="space-y-4"
+      >
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Email</label
+          >
+          <input
+            formControlName="email"
+            [disabled]="hasSystemUser"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+            placeholder="Email"
+          />
+          <div
+            *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Enter a valid email
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Password</label
+          >
+          <div class="relative">
+            <input
+              [type]="showLoginPassword ? 'text' : 'password'"
+              formControlName="password"
+              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Password"
+            />
+            <button
+              type="button"
+              (click)="showLoginPassword = !showLoginPassword"
+              class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-300"
+              aria-label="Toggle password visibility"
+            >
+              <mat-icon class="text-base">{{
+                showLoginPassword ? 'visibility_off' : 'visibility'
+              }}</mat-icon>
+            </button>
+          </div>
+          <div
+            *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Password is required
+          </div>
+          <button
+            type="button"
+            (click)="onForgotPassword()"
+            class="mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700"
+          >
+            Forgot password?
+          </button>
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          [disabled]="loginForm.invalid"
+        >
+          Login
+        </button>
+      </form>
+
+      <form
+        *ngIf="hasSystemUser && isForgotMode"
+        [formGroup]="forgotForm"
+        (ngSubmit)="forgotOtpSent ? onResetPassword() : onSendForgotOtp()"
+        class="space-y-4"
+      >
+        <div class="text-center text-sm text-gray-600 dark:text-gray-300">
+          Reset your password with a verification code.
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Email</label
+          >
+          <input
+            formControlName="email"
+            [disabled]="hasSystemUser"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60 disabled:cursor-not-allowed"
+            placeholder="Email"
+          />
+          <div
+            *ngIf="forgotForm.get('email')?.touched && forgotForm.get('email')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Enter a valid email
+          </div>
+        </div>
+        <div *ngIf="forgotOtpSent">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Verification Code</label
+          >
+          <input
+            formControlName="otp"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter 6-digit code"
+          />
+          <div
+            *ngIf="forgotForm.get('otp')?.touched && forgotForm.get('otp')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Enter the 6-digit code
+          </div>
+        </div>
+        <div *ngIf="forgotOtpSent">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >New Password</label
+          >
+          <div class="relative">
+            <input
+              [type]="showResetPassword ? 'text' : 'password'"
+              formControlName="newPassword"
+              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="New password"
+            />
+            <button
+              type="button"
+              (click)="showResetPassword = !showResetPassword"
+              class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-300"
+              aria-label="Toggle password visibility"
+            >
+              <mat-icon class="text-base">{{
+                showResetPassword ? 'visibility_off' : 'visibility'
+              }}</mat-icon>
+            </button>
+          </div>
+          <div
+            *ngIf="forgotForm.get('newPassword')?.touched && forgotForm.get('newPassword')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            New password is required
+          </div>
+        </div>
+        <div *ngIf="forgotOtpSent">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Confirm Password</label
+          >
+          <div class="relative">
+            <input
+              [type]="showResetConfirmPassword ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Confirm password"
+            />
+            <button
+              type="button"
+              (click)="showResetConfirmPassword = !showResetConfirmPassword"
+              class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-300"
+              aria-label="Toggle password visibility"
+            >
+              <mat-icon class="text-base">{{
+                showResetConfirmPassword ? 'visibility_off' : 'visibility'
+              }}</mat-icon>
+            </button>
+          </div>
+          <div
+            *ngIf="forgotForm.get('confirmPassword')?.touched && forgotForm.get('confirmPassword')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Confirm password is required
+          </div>
+        </div>
+        <div
+          *ngIf="forgotForm.errors?.['passwordMismatch'] && forgotForm.touched"
+          class="text-sm text-red-400"
+        >
+          Passwords do not match
+        </div>
+        <div *ngIf="forgotErrorMsg" class="text-sm text-red-400">
+          {{ forgotErrorMsg }}
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          [disabled]="forgotOtpSent ? forgotForm.invalid : forgotForm.get('email')?.invalid"
+        >
+          {{ forgotOtpSent ? 'Reset Password' : 'Send Verification Code' }}
+        </button>
+        <button
+          type="button"
+          (click)="onCancelForgot()"
+          class="w-full text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100"
+        >
+          Back to login
+        </button>
+      </form>
+
+      <form
+        *ngIf="!hasSystemUser"
+        [formGroup]="createUserForm"
+        (ngSubmit)="onCreateUser()"
+        class="space-y-4"
+      >
+        <div class="text-center text-sm text-gray-600 dark:text-gray-300">
+          Welcome to Student Management App. Create the first user to get started.
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Name</label
+          >
+          <input
+            formControlName="name"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Full name"
+          />
+          <div
+            *ngIf="createUserForm.get('name')?.touched && createUserForm.get('name')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Name is required
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Email</label
+          >
+          <input
+            formControlName="email"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Email"
+          />
+          <div
+            *ngIf="createUserForm.get('email')?.touched && createUserForm.get('email')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Enter a valid email
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Institute Name</label
+          >
+          <input
+            formControlName="instituteName"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Institute name"
+          />
+          <div
+            *ngIf="createUserForm.get('instituteName')?.touched && createUserForm.get('instituteName')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Institute name is required
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Password</label
+          >
+          <div class="relative">
+            <input
+              [type]="showCreatePassword ? 'text' : 'password'"
+              formControlName="password"
+              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Password"
+            />
+            <button
+              type="button"
+              (click)="showCreatePassword = !showCreatePassword"
+              class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-300"
+              aria-label="Toggle password visibility"
+            >
+              <mat-icon class="text-base">{{
+                showCreatePassword ? 'visibility_off' : 'visibility'
+              }}</mat-icon>
+            </button>
+          </div>
+          <div
+            *ngIf="createUserForm.get('password')?.touched && createUserForm.get('password')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Password is required
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Confirm Password</label
+          >
+          <div class="relative">
+            <input
+              [type]="showCreateConfirmPassword ? 'text' : 'password'"
+              formControlName="confirmPassword"
+              class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Confirm password"
+            />
+            <button
+              type="button"
+              (click)="showCreateConfirmPassword = !showCreateConfirmPassword"
+              class="absolute inset-y-0 right-0 flex items-center px-3 text-gray-500 dark:text-gray-300"
+              aria-label="Toggle password visibility"
+            >
+              <mat-icon class="text-base">{{
+                showCreateConfirmPassword ? 'visibility_off' : 'visibility'
+              }}</mat-icon>
+            </button>
+          </div>
+          <div
+            *ngIf="createUserForm.get('confirmPassword')?.touched && createUserForm.get('confirmPassword')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Confirm password is required
+          </div>
+        </div>
+        <div *ngIf="otpSent">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1"
+            >Verification Code</label
+          >
+          <input
+            formControlName="otp"
+            class="w-full rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Enter 6-digit code"
+          />
+          <div
+            *ngIf="createUserForm.get('otp')?.touched && createUserForm.get('otp')?.invalid"
+            class="mt-1 text-xs text-red-400"
+          >
+            Enter the 6-digit code
+          </div>
+        </div>
+        <div
+          *ngIf="createUserForm.errors?.['passwordMismatch'] && createUserForm.touched"
+          class="text-sm text-red-400"
+        >
+          Passwords do not match
+        </div>
+        <div *ngIf="createErrorMsg" class="text-sm text-red-400">
+          {{ createErrorMsg }}
+        </div>
+        <button
+          type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 rounded transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          [disabled]="createUserForm.invalid"
+        >
+          {{ otpSent ? 'Verify & Create User' : 'Send Verification Code' }}
+        </button>
+      </form>
+    </ng-container>
   </div>
 </div>

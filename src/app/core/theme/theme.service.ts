@@ -30,7 +30,7 @@ export class ThemeService {
     this.setTheme(next);
   }
 
-  private setTheme(theme: ThemeMode): void {
+  setTheme(theme: ThemeMode): void {
     this.currentTheme = theme;
     this.themeSubject.next(theme);
     this.applyThemeClass();

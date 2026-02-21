@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
-import { ThemeService } from '../core/theme/theme.service';
+import { ThemeService, ThemeMode } from '../core/theme/theme.service';
 
 @Component({
   selector: 'app-header',
@@ -9,6 +9,8 @@ import { ThemeService } from '../core/theme/theme.service';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   isDark = false;
+  isMenuOpen = false;
+  userName = 'User';
   private sub?: Subscription;
   currentTitle = '';
 
@@ -16,6 +18,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.sub = new Subscription();
+    const storedName =
+      localStorage.getItem('systemUserName') ||
+      localStorage.getItem('userName') ||
+      '';
+    if (storedName) {
+      this.userName = storedName;
+    } else {
+      const storedUser = localStorage.getItem('systemUser');
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed?.name) {
+            this.userName = parsed.name;
+          }
+        } catch {
+          // ignore invalid JSON
+        }
+      }
+    }
 
     const themeSub = this.themeService.isDark$.subscribe((isDark) => {
       this.isDark = isDark;
@@ -36,8 +57,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.sub?.unsubscribe();
   }
 
-  toggleTheme(): void {
-    this.themeService.toggleTheme();
+  toggleMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  setTheme(mode: ThemeMode): void {
+    this.themeService.setTheme(mode);
+  }
+
+  get userInitial(): string {
+    const trimmed = this.userName.trim();
+    return trimmed ? trimmed[0].toUpperCase() : 'U';
+  }
+
+  @HostListener('document:click')
+  closeMenu(): void {
+    this.isMenuOpen = false;
   }
 
   private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
