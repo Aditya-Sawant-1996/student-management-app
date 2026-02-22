@@ -13,6 +13,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userName = 'User';
   private sub?: Subscription;
   currentTitle = '';
+  breadcrumb: Array<{ label: string; url?: string }> = [];
 
   constructor(private themeService: ThemeService, private router: Router, private route: ActivatedRoute) {}
 
@@ -46,7 +47,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(() => {
         const child = this.getDeepestChild(this.route);
-        this.currentTitle = child.snapshot.data['title'] || '';
+        const data = child.snapshot.data || {};
+        this.currentTitle = data['title'] || '';
+        this.breadcrumb = Array.isArray(data['breadcrumb'])
+          ? data['breadcrumb']
+          : [];
       });
 
     this.sub.add(themeSub);
@@ -60,6 +65,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   toggleMenu(event: MouseEvent): void {
     event.stopPropagation();
     this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  openSettings(): void {
+    this.isMenuOpen = false;
+    this.router.navigate(['/settings']);
   }
 
   setTheme(mode: ThemeMode): void {

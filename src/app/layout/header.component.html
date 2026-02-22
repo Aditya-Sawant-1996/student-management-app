@@ -1,6 +1,23 @@
 <header class="h-16 bg-white dark:bg-gray-800 shadow flex items-center justify-between px-6">
   <div class="text-lg font-semibold text-gray-800 dark:text-gray-100">
-    {{ currentTitle || 'Dashboard' }}
+    <ng-container *ngIf="breadcrumb.length; else plainTitle">
+      <nav class="flex items-center gap-2 text-sm font-semibold text-gray-800 dark:text-gray-100">
+        <ng-container *ngFor="let crumb of breadcrumb; let last = last">
+          <a
+            *ngIf="crumb.url && !last"
+            [routerLink]="crumb.url"
+            class="hover:underline"
+          >
+            {{ crumb.label }}
+          </a>
+          <span *ngIf="!crumb.url || last">{{ crumb.label }}</span>
+          <span *ngIf="!last" class="text-gray-400 dark:text-gray-500">/</span>
+        </ng-container>
+      </nav>
+    </ng-container>
+    <ng-template #plainTitle>
+      {{ currentTitle || 'Dashboard' }}
+    </ng-template>
   </div>
   <div class="relative" (click)="$event.stopPropagation()">
     <button
@@ -18,7 +35,7 @@
 
     <div
       *ngIf="isMenuOpen"
-      class="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-white/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-xl ring-1 ring-black/5"
+      class="absolute right-0 mt-3 w-72 overflow-hidden rounded-2xl border border-white/60 dark:border-gray-700/60 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl shadow-xl ring-1 ring-black/5 z-50"
     >
       <div class="px-4 py-3 border-b border-gray-100/80 dark:border-gray-800/80">
         <div class="text-[11px] uppercase tracking-widest text-gray-500 dark:text-gray-400">Signed in as</div>
@@ -66,6 +83,7 @@
 
         <button
           type="button"
+          (click)="openSettings()"
           class="w-full inline-flex items-center justify-between rounded-xl border border-gray-200 dark:border-gray-700 bg-white/70 dark:bg-gray-800/70 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 transition-colors"
         >
           <span>Settings</span>

@@ -1,0 +1,56 @@
+<section class="h-full max-h-[calc(100vh-100px)] overflow-y-auto p-6">
+  <div class="mb-6 flex flex-col gap-1">
+    <div class="text-xs uppercase tracking-[0.32em] text-gray-400 dark:text-gray-500">About</div>
+    <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Student Management App</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      Current release details and support information.
+    </p>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+      <div class="flex items-center justify-between">
+        <div class="text-sm font-semibold text-gray-600 dark:text-gray-300">Version</div>
+        <span class="rounded-full bg-gray-100 dark:bg-gray-800 px-3 py-1 text-xs font-semibold text-gray-600 dark:text-gray-300">
+          {{ version }}
+        </span>
+      </div>
+      <div class="mt-4">
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-200 shadow-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
+        >
+          <mat-icon class="text-base">system_update</mat-icon>
+          Check for updates
+        </button>
+      </div>
+      <p class="mt-3 text-xs text-gray-500 dark:text-gray-400">
+        Updates will be available here in future releases.
+      </p>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+      <div class="text-sm font-semibold text-gray-600 dark:text-gray-300">Support</div>
+      <div class="mt-4 space-y-3 text-sm text-gray-700 dark:text-gray-200">
+        <div class="flex items-center gap-2">
+          <mat-icon class="text-base text-gray-500 dark:text-gray-400">mail</mat-icon>
+          <span>{{ supportEmail }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <mat-icon class="text-base text-gray-500 dark:text-gray-400">call</mat-icon>
+          <span>{{ supportPhone }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg:col-span-2 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+      <div class="text-sm font-semibold text-gray-600 dark:text-gray-300">What’s in this version</div>
+      <ul class="mt-4 grid gap-2 sm:grid-cols-2 text-sm text-gray-700 dark:text-gray-200">
+        <li *ngFor="let feature of features" class="flex items-start gap-2">
+          <mat-icon class="text-base text-emerald-500">check_circle</mat-icon>
+          <span>{{ feature }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>
