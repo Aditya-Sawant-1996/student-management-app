@@ -34,6 +34,12 @@ interface ResetPasswordResponse {
   message?: string;
 }
 
+interface UpdateLogoResponse {
+  success: boolean;
+  user?: any;
+  message?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -79,6 +85,19 @@ export class LoginService {
 
   login(email: string, password: string): Observable<LoginResponse> {
     return this.http.post<LoginResponse>(`${this.baseUrl}/login`, { email, password });
+  }
+
+  updateSystemUserLogo(logo: string): Observable<UpdateLogoResponse> {
+    return this.http.patch<UpdateLogoResponse>(
+      `${this.baseUrl}/system-user/logo`,
+      { logo }
+    );
+  }
+
+  deleteSystemUserLogo(): Observable<UpdateLogoResponse> {
+    return this.http.delete<UpdateLogoResponse>(
+      `${this.baseUrl}/system-user/logo`
+    );
   }
 
   // You can add logout, token storage etc.

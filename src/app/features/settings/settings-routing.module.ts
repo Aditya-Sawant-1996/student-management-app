@@ -15,6 +15,18 @@ const routes: Routes = [
     path: 'about',
     loadChildren: () =>
       import('./about/about.module').then(m => m.AboutModule)
+  },
+  {
+    path: 'details',
+    loadChildren: () =>
+      import('./details/details.module').then(m => m.DetailsModule)
+  },
+  {
+    path: 'change-password',
+    loadChildren: () =>
+      import('./change-password/change-password.module').then(
+        m => m.ChangePasswordModule
+      )
   }
 ];
 

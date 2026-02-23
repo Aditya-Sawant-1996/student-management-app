@@ -4,6 +4,7 @@ import { LoginService } from '../../core/auth/login.service';
 import { Router } from '@angular/router';
 import { CommonFunctionService } from '../../core/common/common-function.service';
 import { AuthService } from '../../core/auth/auth.service';
+import { InstituteSettingsService } from '../../core/settings/institute-settings.service';
 
 @Component({
   selector: 'app-login',
@@ -33,7 +34,8 @@ export class LoginComponent implements OnInit {
     private loginService: LoginService,
     private router: Router,
     private commonFunction: CommonFunctionService,
-    private authService: AuthService
+    private authService: AuthService,
+    private instituteSettings: InstituteSettingsService
   ) {}
 
   ngOnInit(): void {
@@ -96,6 +98,11 @@ export class LoginComponent implements OnInit {
             localStorage.setItem('systemUser', JSON.stringify(res.user));
             if (res.user.name) {
               localStorage.setItem('systemUserName', res.user.name);
+            }
+            if (res.user.instituteLogo) {
+              this.instituteSettings.setLogo(res.user.instituteLogo);
+            } else {
+              this.instituteSettings.clearLogo();
             }
           }
           if (res.token && res.expiresAt) {

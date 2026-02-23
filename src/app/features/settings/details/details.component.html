@@ -1,0 +1,129 @@
+<section class="h-full max-h-[calc(100vh-100px)] overflow-y-auto p-6">
+  <div class="mb-6 flex flex-col gap-1">
+    <div class="text-xs uppercase tracking-[0.32em] text-gray-400 dark:text-gray-500">Settings</div>
+    <h1 class="text-2xl font-semibold text-gray-800 dark:text-gray-100">Institute Details</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400">
+      Review system user information and manage the institute logo.
+    </p>
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-2">
+    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+      <div class="flex items-start justify-between">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">System User</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Primary admin account details</p>
+        </div>
+        <mat-icon class="text-sky-600 dark:text-sky-300">badge</mat-icon>
+      </div>
+
+      <div class="mt-4 space-y-3 text-sm">
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Name</span>
+          <span class="font-medium text-gray-800 dark:text-gray-100">
+            {{ systemUser?.name || systemUserName || 'Not available' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Email</span>
+          <span class="font-medium text-gray-800 dark:text-gray-100">
+            {{ systemUser?.email || 'Not available' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-gray-500 dark:text-gray-400">Institute</span>
+          <span class="font-medium text-gray-800 dark:text-gray-100">
+            {{ systemUser?.instituteName || 'Not available' }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between" *ngIf="systemUser?.role">
+          <span class="text-gray-500 dark:text-gray-400">Role</span>
+          <span class="font-medium text-gray-800 dark:text-gray-100">{{ systemUser?.role }}</span>
+        </div>
+        <div class="flex items-center justify-between" *ngIf="systemUser?.phone">
+          <span class="text-gray-500 dark:text-gray-400">Phone</span>
+          <span class="font-medium text-gray-800 dark:text-gray-100">{{ systemUser?.phone }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Institute Logo</h2>
+          <p class="text-xs text-gray-500 dark:text-gray-400">
+            JPG/PNG files up to {{ maxLogoSizeMb }} MB. Used in the sidebar and for printing.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-full bg-sky-600 px-4 py-2 text-xs font-semibold text-white hover:bg-sky-700 transition-colors"
+          (click)="fileInput.click()"
+        >
+          <mat-icon class="text-sm">upload</mat-icon>
+          Upload
+        </button>
+      </div>
+
+      <input
+        #fileInput
+        type="file"
+        accept="image/*"
+        class="hidden"
+        (change)="onFileSelected($event)"
+      />
+
+      <div
+        *ngIf="!logoPreview"
+        class="mt-4 rounded-xl border-2 border-dashed px-6 py-8 text-center transition-colors"
+        [class.border-emerald-400]="isDragOver"
+        [class.bg-emerald-50]="isDragOver"
+        [class.border-gray-200]="!isDragOver"
+        [class.dark:border-gray-700]="!isDragOver"
+        [class.dark:bg-emerald-900]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
+        <mat-icon class="text-3xl text-gray-400 dark:text-gray-500">cloud_upload</mat-icon>
+        <p class="mt-2 text-sm font-medium text-gray-700 dark:text-gray-200">
+          Drag & drop your logo here
+        </p>
+        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          or click below to browse files
+        </p>
+        <button
+          type="button"
+          class="mt-4 inline-flex items-center gap-2 rounded-full bg-gray-900 px-4 py-2 text-xs font-semibold text-white hover:bg-gray-800 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
+          (click)="fileInput.click()"
+        >
+          <mat-icon class="text-sm">folder_open</mat-icon>
+          Choose File
+        </button>
+      </div>
+
+      <div class="mt-4" *ngIf="logoPreview">
+        <div class="flex items-center justify-between">
+          <div class="text-xs uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+            Preview
+          </div>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-full bg-rose-600 px-3 py-1 text-[11px] font-semibold text-white hover:bg-rose-700 transition-colors"
+            (click)="onDeleteLogo()"
+          >
+            <mat-icon class="text-sm">delete</mat-icon>
+            Delete Logo
+          </button>
+        </div>
+        <div class="mt-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-4">
+          <img
+            [src]="logoPreview"
+            alt="Institute logo preview"
+            class="h-24 w-full object-contain"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

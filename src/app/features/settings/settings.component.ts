@@ -31,7 +31,8 @@ export class SettingsComponent {
       description: 'Institute profile, address, and contact details.',
       icon: 'badge',
       show: true,
-      iconClass: 'text-sky-600 dark:text-sky-300'
+      iconClass: 'text-sky-600 dark:text-sky-300',
+      route: '/settings/details'
     },
     {
       key: 'printers',
@@ -47,7 +48,8 @@ export class SettingsComponent {
       description: 'Update your login password securely.',
       icon: 'lock',
       show: true,
-      iconClass: 'text-rose-600 dark:text-rose-300'
+      iconClass: 'text-rose-600 dark:text-rose-300',
+      route: '/settings/change-password'
     }
   ];
 }

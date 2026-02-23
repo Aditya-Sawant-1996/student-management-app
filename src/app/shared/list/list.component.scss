@@ -2,7 +2,6 @@
 
 :host {
 	display: block;
-	/* Leave some space for header/nav etc.; adjust if needed */
 	max-height: calc(100vh - 120px);
 }
 
@@ -18,15 +17,17 @@
 	flex-wrap: wrap;
 }
 
+.pagination-inline {
+	white-space: nowrap;
+}
+
 .search-input {
-	/* Make search smaller so header items fit in one row */
-	width: 220px;
+	width: 240px;
 	max-width: 100%;
 }
 
 .list-table-wrapper {
-	/* Take remaining space below the search/add row inside the card */
-	max-height: calc(100vh - 220px);
+	max-height: calc(100vh - 260px);
 	overflow-y: auto;
 }
 

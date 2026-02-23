@@ -1,12 +1,21 @@
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 import { AuthService } from '../core/auth/auth.service';
+import { InstituteSettingsService } from '../core/settings/institute-settings.service';
 
 @Component({
   selector: 'app-sidebar',
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
-  constructor(private authService: AuthService) {}
+  logoUrl$: Observable<string | null>;
+
+  constructor(
+    private authService: AuthService,
+    private instituteSettings: InstituteSettingsService
+  ) {
+    this.logoUrl$ = this.instituteSettings.logo$;
+  }
 
   onLogout(): void {
     try {
