@@ -4,6 +4,26 @@
 
 @import "@angular/material/prebuilt-themes/indigo-pink.css";
 
+/* Global font stack with strong Unicode coverage (Marathi/Devanagari, etc.) */
+:root {
+  font-family: "Nirmala UI", "Noto Sans Devanagari", "Noto Sans",
+    "Segoe UI", "Mangal", "Kohinoor Devanagari", "Lohit Devanagari",
+    "Arial Unicode MS", system-ui, -apple-system, "Helvetica Neue",
+    Arial, sans-serif;
+}
+
+body,
+input,
+textarea,
+select,
+button,
+.mat-mdc-input-element,
+.mat-mdc-select-value-text,
+.mat-mdc-option,
+.mat-mdc-option .mdc-list-item__primary-text {
+  font-family: inherit;
+}
+
 // /* Ensure Angular Material overlays (selects, datepickers, dialogs) appear above custom modals */
 // .cdk-overlay-container,
 // .cdk-global-overlay-wrapper {

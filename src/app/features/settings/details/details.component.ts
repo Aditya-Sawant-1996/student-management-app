@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
 import { CommonFunctionService } from '../../../core/common/common-function.service';
 import { LoginService } from '../../../core/auth/login.service';
 import { InstituteSettingsService } from '../../../core/settings/institute-settings.service';
@@ -7,6 +8,9 @@ interface SystemUser {
   name?: string;
   email?: string;
   instituteName?: string;
+  instituteAddress?: string;
+  instituteContact?: string;
+  instituteCode?: string;
   phone?: string;
   role?: string;
   instituteLogo?: string;
@@ -17,22 +21,31 @@ interface SystemUser {
   templateUrl: './details.component.html'
 })
 export class DetailsComponent implements OnInit {
-  systemUser: SystemUser | null = null;
-  systemUserName = '';
-  logoPreview: string | null = null;
-  isDragOver = false;
+  public systemUser: SystemUser | null = null;
+  public systemUserName = '';
+  public logoPreview: string | null = null;
+  public isDragOver = false;
+  public detailsForm!: FormGroup;
+  public isSavingDetails = false;
   readonly maxLogoSizeMb = 5;
 
   constructor(
     private commonFunction: CommonFunctionService,
     private loginService: LoginService,
-    private instituteSettings: InstituteSettingsService
+    private instituteSettings: InstituteSettingsService,
+    private fb: FormBuilder
   ) {}
 
   ngOnInit(): void {
     this.systemUser = this.loadSystemUser();
     this.systemUserName = this.systemUser?.name || this.readSystemUserName();
     this.logoPreview = this.instituteSettings.getLogo();
+    this.detailsForm = this.fb.group({
+      instituteName: [this.systemUser?.instituteName || ''],
+      instituteAddress: [this.systemUser?.instituteAddress || ''],
+      instituteContact: [this.systemUser?.instituteContact || ''],
+      instituteCode: [this.systemUser?.instituteCode || ''],
+    });
   }
 
   onFileSelected(event: Event): void {
@@ -87,6 +100,53 @@ export class DetailsComponent implements OnInit {
           'error'
         );
       }
+    });
+  }
+
+  public onUpdateInstituteDetails(): void {
+    if (!this.detailsForm) {
+      return;
+    }
+    const value = this.detailsForm.value || {};
+    const payload = {
+      instituteName: (value.instituteName || '').trim(),
+      instituteAddress: (value.instituteAddress || '').trim(),
+      instituteContact: (value.instituteContact || '').trim(),
+      instituteCode: (value.instituteCode || '').trim(),
+    };
+
+    this.isSavingDetails = true;
+    this.loginService.updateSystemUserDetails(payload).subscribe({
+      next: (res) => {
+        this.isSavingDetails = false;
+        if (!res.success || !res.user) {
+          this.commonFunction.showToast(
+            res.message || 'Unable to update institute details.',
+            'error'
+          );
+          return;
+        }
+        this.systemUser = res.user;
+        this.detailsForm.patchValue({
+          instituteName: res.user?.instituteName || '',
+          instituteAddress: res.user?.instituteAddress || '',
+          instituteContact: res.user?.instituteContact || '',
+          instituteCode: res.user?.instituteCode || '',
+        });
+        this.persistSystemUser(res.user);
+        this.commonFunction.showToast(
+          'Institute details updated successfully.',
+          'success'
+        );
+      },
+      error: (err) => {
+        this.isSavingDetails = false;
+        console.error(err);
+        this.commonFunction.showToast(
+          err?.error?.message || 'Unable to update institute details.',
+          'error'
+        );
+      },
     });
   }
 

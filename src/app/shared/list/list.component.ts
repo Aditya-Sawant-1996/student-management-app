@@ -14,6 +14,7 @@ export class ListComponent {
   @Input() showEditAction = true;
   @Input() showDeleteAction = true;
   @Input() showViewAction = true;
+  @Input() showPrintAction = false;
   @Input() loading = false;
   @Input() page = 1;
   @Input() totalPages = 1;
@@ -30,6 +31,7 @@ export class ListComponent {
   @Output() editClicked = new EventEmitter<any>();
   @Output() deleteClicked = new EventEmitter<any>();
   @Output() viewClicked = new EventEmitter<any>();
+  @Output() printClicked = new EventEmitter<any>();
   @Output() searchChange = new EventEmitter<string>();
   @Output() prevPageClicked = new EventEmitter<void>();
   @Output() nextPageClicked = new EventEmitter<void>();
@@ -61,6 +63,10 @@ export class ListComponent {
 
   onView(row: any): void {
     this.viewClicked.emit(row);
+  }
+
+  onPrint(row: any): void {
+    this.printClicked.emit(row);
   }
 
   onPrevPage(): void {

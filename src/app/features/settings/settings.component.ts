@@ -34,14 +34,14 @@ export class SettingsComponent {
       iconClass: 'text-sky-600 dark:text-sky-300',
       route: '/settings/details'
     },
-    {
-      key: 'printers',
-      label: 'Printers',
-      description: 'Manage default printers and print preferences.',
-      icon: 'print',
-      show: true,
-      iconClass: 'text-emerald-600 dark:text-emerald-300'
-    },
+    // {
+    //   key: 'printers',
+    //   label: 'Printers',
+    //   description: 'Manage default printers and print preferences.',
+    //   icon: 'print',
+    //   show: true,
+    //   iconClass: 'text-emerald-600 dark:text-emerald-300'
+    // },
     {
       key: 'change-password',
       label: 'Change Password',

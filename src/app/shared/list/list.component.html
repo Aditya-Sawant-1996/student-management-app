@@ -126,6 +126,14 @@
                 <mat-icon class="text-sm">visibility</mat-icon>
               </button>
               <button
+                *ngIf="showPrintAction"
+                type="button"
+                (click)="onPrint(row)"
+                class="inline-flex items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200 text-xs font-semibold px-3 py-1"
+              >
+                <mat-icon class="text-sm">print</mat-icon>
+              </button>
+              <button
                 *ngIf="showEditAction"
                 type="button"
                 (click)="onEdit(row)"

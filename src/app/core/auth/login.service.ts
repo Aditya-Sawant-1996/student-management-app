@@ -40,6 +40,12 @@ interface UpdateLogoResponse {
   message?: string;
 }
 
+interface UpdateSystemUserResponse {
+  success: boolean;
+  user?: any;
+  message?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -91,6 +97,18 @@ export class LoginService {
     return this.http.patch<UpdateLogoResponse>(
       `${this.baseUrl}/system-user/logo`,
       { logo }
+    );
+  }
+
+  updateSystemUserDetails(payload: {
+    instituteName: string;
+    instituteAddress?: string;
+    instituteContact?: string;
+    instituteCode?: string;
+  }): Observable<UpdateSystemUserResponse> {
+    return this.http.patch<UpdateSystemUserResponse>(
+      `${this.baseUrl}/system-user/details`,
+      payload
     );
   }
 
