@@ -36,6 +36,7 @@ export class AppComponent implements OnInit {
         } catch {
           // ignore storage errors
         }
+        this.instituteSettings.setInstituteName(res.user.instituteName || '');
         if (res.user.instituteLogo) {
           this.instituteSettings.setLogo(res.user.instituteLogo);
         } else {

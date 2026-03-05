@@ -134,6 +134,7 @@ export class DetailsComponent implements OnInit {
           instituteCode: res.user?.instituteCode || '',
         });
         this.persistSystemUser(res.user);
+        this.instituteSettings.setInstituteName(res.user?.instituteName || '');
         this.commonFunction.showToast(
           'Institute details updated successfully.',
           'success'

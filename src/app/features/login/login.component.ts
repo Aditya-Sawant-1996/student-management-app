@@ -99,6 +99,7 @@ export class LoginComponent implements OnInit {
             if (res.user.name) {
               localStorage.setItem('systemUserName', res.user.name);
             }
+            this.instituteSettings.setInstituteName(res.user.instituteName || '');
             if (res.user.instituteLogo) {
               this.instituteSettings.setLogo(res.user.instituteLogo);
             } else {
@@ -185,6 +186,9 @@ export class LoginComponent implements OnInit {
               if (res.user.name) {
                 localStorage.setItem('systemUserName', res.user.name);
               }
+              this.instituteSettings.setInstituteName(
+                res.user.instituteName || ''
+              );
             }
             this.createUserForm.reset();
             this.commonFunction.showToast(
@@ -281,6 +285,7 @@ export class LoginComponent implements OnInit {
             if (res.user.name) {
               localStorage.setItem('systemUserName', res.user.name);
             }
+            this.instituteSettings.setInstituteName(res.user.instituteName || '');
           }
           this.commonFunction.showToast(
             res.message || 'Password reset successful',

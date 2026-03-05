@@ -1,14 +1,29 @@
 <aside class="w-64 flex flex-col min-h-screen relative bg-white text-gray-900 dark:bg-gray-900 dark:text-white">
-  <div class="px-4 py-4 text-xl font-semibold border-b border-gray-800">
-    <ng-container *ngIf="logoUrl$ | async as logoUrl; else defaultTitle">
-      <img
-        [src]="logoUrl"
-        alt="Institute logo"
-        class="h-10 w-full object-contain"
-      />
+  <div class="px-4 py-4 border-b border-gray-800">
+    <ng-container *ngIf="logoUrl$ | async as logoUrl; else nameOnly">
+      <div class="flex items-center gap-3">
+        <img
+          [src]="logoUrl"
+          alt="Institute logo"
+          class="h-10 w-10 object-contain"
+        />
+        <div class="min-w-0 flex-1">
+          <div
+            class="text-base font-semibold leading-tight truncate"
+            [title]="(instituteName$ | async) || 'Student Management'"
+          >
+            {{ (instituteName$ | async) || 'Student Management' }}
+          </div>
+        </div>
+      </div>
     </ng-container>
-    <ng-template #defaultTitle>
-      Student Management
+    <ng-template #nameOnly>
+      <div
+        class="text-xl font-semibold truncate"
+        [title]="(instituteName$ | async) || 'Student Management'"
+      >
+        {{ (instituteName$ | async) || 'Student Management' }}
+      </div>
     </ng-template>
   </div>
   <nav class="flex-1 px-2 py-4 space-y-2">

@@ -9,12 +9,14 @@ import { InstituteSettingsService } from '../core/settings/institute-settings.se
 })
 export class SidebarComponent {
   logoUrl$: Observable<string | null>;
+  instituteName$: Observable<string>;
 
   constructor(
     private authService: AuthService,
     private instituteSettings: InstituteSettingsService
   ) {
     this.logoUrl$ = this.instituteSettings.logo$;
+    this.instituteName$ = this.instituteSettings.instituteName$;
   }
 
   onLogout(): void {

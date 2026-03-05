@@ -7,11 +7,21 @@
     </p>
   </div>
 
-  <div class="grid gap-6 lg:grid-cols-2">
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+  <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+    <div class="flex items-start justify-between">
+      <div>
+        <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Institute Profile</h2>
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          Manage system user details, institute info, and logo in one place.
+        </p>
+      </div>
+      <mat-icon class="text-emerald-600 dark:text-emerald-300">account_balance</mat-icon>
+    </div>
+
+    <div class="mt-6">
       <div class="flex items-start justify-between">
         <div>
-          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">System User</h2>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">System User</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Primary admin account details</p>
         </div>
         <mat-icon class="text-sky-600 dark:text-sky-300">badge</mat-icon>
@@ -47,10 +57,12 @@
       </div>
     </div>
 
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+    <div class="my-6 border-t border-gray-200 dark:border-gray-700"></div>
+
+    <div>
       <div class="flex items-start justify-between">
         <div>
-          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Institute Details</h2>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Institute Details</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">Update institute name and contact info</p>
         </div>
         <mat-icon class="text-emerald-600 dark:text-emerald-300">domain</mat-icon>
@@ -119,10 +131,12 @@
       </form>
     </div>
 
-    <div class="rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 p-5 shadow-sm">
+    <div class="my-6 border-t border-gray-200 dark:border-gray-700"></div>
+
+    <div>
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100">Institute Logo</h2>
+          <h3 class="text-base font-semibold text-gray-800 dark:text-gray-100">Institute Logo</h3>
           <p class="text-xs text-gray-500 dark:text-gray-400">
             JPG/PNG files up to {{ maxLogoSizeMb }} MB. Used in the sidebar and for printing.
           </p>
