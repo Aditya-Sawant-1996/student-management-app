@@ -2,12 +2,30 @@
   "name": "student-management-app",
   "version": "0.0.0",
   "main": "main.js",
+  "build": {
+    "appId": "com.studentmanagement.app",
+    "productName": "Student Management",
+    "files": [
+      "main.js",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "dist/student-management-app/browser",
+        "to": "ui"
+      }
+    ],
+    "directories": {
+      "output": "release"
+    }
+  },
   "scripts": {
     "ng": "ng",
     "start": "cross-env ELECTRON_DEV=true electron .",
     "watch": "ng build --configuration development --base-href ./ --watch",
     "build": "ng build --configuration production --base-href ./",
-    "electron": "npm run build && electron ."
+    "electron": "npm run build && electron .",
+    "package:exe": "npm i && npm run build && electron-builder --win"
   },
   "private": true,
   "dependencies": {
@@ -35,6 +53,7 @@
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.4.19",
     "electron": "^38.2.2",
+    "electron-builder": "^25.0.0",
     "jasmine-core": "~5.1.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
