@@ -105,6 +105,7 @@ export class LoginService {
     instituteAddress?: string;
     instituteContact?: string;
     instituteCode?: string;
+    backupEnabled?: boolean;
   }): Observable<UpdateSystemUserResponse> {
     return this.http.patch<UpdateSystemUserResponse>(
       `${this.baseUrl}/system-user/details`,

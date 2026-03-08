@@ -14,6 +14,7 @@ interface SystemUser {
   phone?: string;
   role?: string;
   instituteLogo?: string;
+  backupEnabled?: boolean;
 }
 
 @Component({
@@ -45,6 +46,7 @@ export class DetailsComponent implements OnInit {
       instituteAddress: [this.systemUser?.instituteAddress || ''],
       instituteContact: [this.systemUser?.instituteContact || ''],
       instituteCode: [this.systemUser?.instituteCode || ''],
+      backupEnabled: [this.systemUser?.backupEnabled ?? true],
     });
   }
 
@@ -113,6 +115,7 @@ export class DetailsComponent implements OnInit {
       instituteAddress: (value.instituteAddress || '').trim(),
       instituteContact: (value.instituteContact || '').trim(),
       instituteCode: (value.instituteCode || '').trim(),
+      backupEnabled: !!value.backupEnabled,
     };
 
     this.isSavingDetails = true;
@@ -132,6 +135,7 @@ export class DetailsComponent implements OnInit {
           instituteAddress: res.user?.instituteAddress || '',
           instituteContact: res.user?.instituteContact || '',
           instituteCode: res.user?.instituteCode || '',
+          backupEnabled: res.user?.backupEnabled ?? true,
         });
         this.persistSystemUser(res.user);
         this.instituteSettings.setInstituteName(res.user?.instituteName || '');
